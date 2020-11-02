@@ -12,12 +12,14 @@ L_MIN_RANGE=[1.0e28, 1.0e34]
 L_MAX_RANGE=[1.0e34, 1.0e36]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
-FRAC_ABOVE_THRESHOLD=1/4.0
+FRAC_ABOVE_THRESHOLD=1/5.0
 
-DRAW_EXTRA_CONTOURS = True
+DRAW_EXTRA_CONTOURS = False
 
 dimMin= int(log(L_MIN_RANGE[1]/L_MIN_RANGE[0]) / log(POWER_STEP))
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
+
+paperPoint = [1e35, 1e29]
 
 def Gamma(s, x):
     if(s < 0):
@@ -38,8 +40,8 @@ def getNumPulsarsAboveThreshold(lMin, lMax):
     return nAbove
 
 def getFracLumAboveThreshold(lMin, lMax):
-    # return (lum above thresh) / (lum below thresh)
-    fracAbove = Gamma(2-ALPHA_L, L_THRESH / lMax) / (Gamma(2-ALPHA_L, lMin / lMax) - Gamma(2-ALPHA_L, L_THRESH / lMax))
+    # return (lum above thresh) / totalLum
+    fracAbove = Gamma(2-ALPHA_L, L_THRESH / lMax) / (Gamma(2-ALPHA_L, lMin / lMax))
     return fracAbove
 
 
@@ -125,6 +127,10 @@ if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [0.1*i for i in range(1, 15)], 
         colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
 plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(1, 0, 0)], linewidths=2)
+
+
+plt.scatter(paperPoint[0], paperPoint[1], c='purple')
+
 
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay-extra.png")

@@ -1,0 +1,171 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      6081,        163]
+NotebookOptionsPosition[      5286,        143]
+NotebookOutlinePosition[      5627,        158]
+CellTagsIndexPosition[      5584,        155]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{
+    RowBox[{
+    "The", " ", "Ploeg", " ", "paper", " ", "models", " ", "Fermi", " ", 
+     RowBox[{"LAT", "'"}], "s", " ", "sensitivity", " ", "as", " ", "a", " ", 
+     "log", " ", "normal", " ", "distribution", " ", "with", " ", "mean", " ",
+      "flux", " ", "\[Mu]", " ", "which", " ", "can", " ", "be", " ", 
+     "determined", " ", "from", " ", "the", " ", "website"}], ",", " ", 
+    RowBox[{
+    "and", " ", "other", " ", "parameters", " ", "\[Sigma]", " ", "and", " ", 
+     RowBox[{"K", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+  "\[IndentingNewLine]", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+   "The", " ", "purpose", " ", "of", " ", "this", " ", "notebook", " ", "is", 
+    " ", "to", " ", "determine", " ", "whether", " ", "there", " ", "is", " ",
+     "an", " ", "analytical", " ", "expression", " ", "for", " ", "the", " ", 
+    "amount", " ", "of", " ", "luminosity", " ", "Fermi", " ", "would", " ", 
+    "see", " ", "of", " ", "a", " ", "population", " ", "of", " ", "pulsars", 
+    " ", "with", " ", "a", " ", "power", " ", "law", " ", "luminosity", " ", 
+    RowBox[{"function", "."}]}], "*)"}], "\[IndentingNewLine]", 
+  "\[IndentingNewLine]", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+    RowBox[{
+    "If", " ", "no", " ", "readily", " ", "usable", " ", "expression", " ", 
+     "is", " ", "produced"}], ",", " ", 
+    RowBox[{
+    "I", " ", "will", " ", "numerically", " ", "integrate", " ", "the", " ", 
+     "sensitivity", " ", "with", " ", "the", " ", "luminosity", " ", 
+     "function", " ", "in", " ", "the", " ", "python", " ", 
+     RowBox[{"program", "."}]}]}], "*)"}]}]], "Input",
+ CellChangeTimes->{{3.81334373324284*^9, 3.813343834374704*^9}, 
+   3.813343864902675*^9, {3.8133439140227594`*^9, 
+   3.813343960414505*^9}},ExpressionUUID->"29779a62-1355-4459-a03a-\
+25b1095c4e2d"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"thresholdSensitivity", "[", "F_", "]"}], ":=", 
+  RowBox[{
+   FractionBox["1", "2"], 
+   RowBox[{"(", 
+    RowBox[{"1", "+", 
+     RowBox[{"Erf", "[", 
+      FractionBox[
+       RowBox[{
+        RowBox[{"Log10", "[", "F", "]"}], " ", "-", " ", 
+        RowBox[{"Log10", "[", "\[Mu]", "]"}], " ", "+", " ", "K"}], 
+       RowBox[{"Sqrt", "[", "\[Sigma]", "]"}]], "]"}]}], ")"}]}]}]], "Input",
+ CellChangeTimes->{{3.813342466058831*^9, 3.813342542588358*^9}, {
+  3.81334259020177*^9, 3.8133425941747255`*^9}},
+ CellLabel->"In[2]:=",ExpressionUUID->"7ffa816d-4945-4a50-8c2e-6dfa0b38811a"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"luminosityFunction", "[", "L_", "]"}], ":=", 
+  RowBox[{
+   RowBox[{"L", "^", 
+    RowBox[{"(", 
+     RowBox[{"-", "\[Alpha]"}], ")"}]}], " ", 
+   RowBox[{"Exp", "[", 
+    RowBox[{"L", "/", "lMax"}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.813342603141156*^9, 3.813342663203043*^9}, {
+  3.8133427394565835`*^9, 3.8133427414681983`*^9}},
+ CellLabel->"In[4]:=",ExpressionUUID->"7e945daf-e0b7-44e0-bc52-c5c67ce96480"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"flux", "[", "L_", "]"}], ":=", 
+  FractionBox["L", 
+   RowBox[{"4", "Pi", " ", 
+    RowBox[{"d", "^", "2"}]}]]}]], "Input",
+ CellChangeTimes->{{3.8133427513175945`*^9, 3.8133427859134097`*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"5a172fe6-5c9e-4e1c-95a6-87fdacabb5ee"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"thresholdSensitivity", "[", 
+     RowBox[{"flux", "[", "L", "]"}], "]"}], " ", 
+    RowBox[{"luminosityFunction", "[", "L", "]"}]}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"L", ",", " ", "lMin", ",", " ", "Infinity"}], "}"}]}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.813343685423133*^9, 3.813343723408312*^9}},
+ CellLabel->"In[6]:=",ExpressionUUID->"cc51f365-d64e-4c99-939a-050449bd08e9"],
+
+Cell[BoxData[
+ RowBox[{
+  SubsuperscriptBox["\[Integral]", "lMin", "\[Infinity]"], 
+  RowBox[{
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{"L", "/", "lMax"}]], " ", 
+    SuperscriptBox["L", 
+     RowBox[{"-", "\[Alpha]"}]], " ", 
+    RowBox[{"(", 
+     RowBox[{"1", "+", 
+      RowBox[{"Erf", "[", 
+       FractionBox[
+        RowBox[{"K", "+", 
+         FractionBox[
+          RowBox[{"Log", "[", 
+           FractionBox["L", 
+            RowBox[{"4", " ", 
+             SuperscriptBox["d", "2"], " ", "\[Pi]"}]], "]"}], 
+          RowBox[{"Log", "[", "10", "]"}]], "-", 
+         FractionBox[
+          RowBox[{"Log", "[", "\[Mu]", "]"}], 
+          RowBox[{"Log", "[", "10", "]"}]]}], 
+        SqrtBox["\[Sigma]"]], "]"}]}], ")"}]}], 
+   RowBox[{"\[DifferentialD]", "L"}]}]}]], "Output",
+ CellChangeTimes->{3.813344090216791*^9},
+ CellLabel->"Out[6]=",ExpressionUUID->"44b6f6b2-1808-4eb4-a3b5-24895f7fbbbb"]
+}, Open  ]]
+},
+WindowSize->{775, 657},
+WindowMargins->{{Automatic, 45}, {6, Automatic}},
+FrontEndVersion->"11.3 for Microsoft Windows (64-bit) (March 6, 2018)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 1864, 37, 197, "Input",ExpressionUUID->"29779a62-1355-4459-a03a-25b1095c4e2d"],
+Cell[2425, 59, 620, 15, 52, "Input",ExpressionUUID->"7ffa816d-4945-4a50-8c2e-6dfa0b38811a"],
+Cell[3048, 76, 452, 11, 25, "Input",ExpressionUUID->"7e945daf-e0b7-44e0-bc52-c5c67ce96480"],
+Cell[3503, 89, 306, 7, 49, "Input",ExpressionUUID->"5a172fe6-5c9e-4e1c-95a6-87fdacabb5ee"],
+Cell[CellGroupData[{
+Cell[3834, 100, 470, 11, 25, "Input",ExpressionUUID->"cc51f365-d64e-4c99-939a-050449bd08e9"],
+Cell[4307, 113, 963, 27, 145, "Output",ExpressionUUID->"44b6f6b2-1808-4eb4-a3b5-24895f7fbbbb"]
+}, Open  ]]
+}
+]
+*)
+

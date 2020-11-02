@@ -1,42 +1,49 @@
 from matplotlib import pyplot as plt
 from math import log, exp
+from scipy.special import gammainc, gamma
 import matplotlib.colors as colors
 
-POWER_STEP = 1.1#1.05 # 1 is the minimum
+POWER_STEP = 1.1 #1.05# 1 is the minimum
 
 
 ALPHA_L_MIN = 1.21
 ALPHA_L_MAX = 2.5
-PLOT_EVERY = 2#4
+PLOT_EVERY = 2
 ALPHA_L_INCREMENT = 0.02
 
 ALPHA_L = ALPHA_L_MIN
 L_EXCESS = 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN_RANGE=[1.0e28, 1.0e34]
-L_MAX_RANGE=[1.0e33, 1.0e37]
+L_MAX_RANGE=[1.0e34, 1.0e36]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
-FRAC_ABOVE_THRESHOLD=1/4.0
+FRAC_ABOVE_THRESHOLD=1/5.0
 
 dimMin= int(log(L_MIN_RANGE[1]/L_MIN_RANGE[0]) / log(POWER_STEP))
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
+
+def Gamma(s, x):
+    if(s < 0):
+        return (Gamma(s+1, x) - x**s * exp(-x))/s
+    return gamma(s) * (1-gammainc(s, x))
     
 def getNumPulsars(lMin, lMax):
-    lum = 1/(ALPHA_L - 2) * (lMin **(2 - ALPHA_L) - lMax**(2 - ALPHA_L))
-    A = L_EXCESS / lum
-    N = A *  1/(ALPHA_L - 1) * (lMin **(1 - ALPHA_L) - lMax**(1 - ALPHA_L))
-    return N
+    lumExp = lMax**(2-ALPHA_L) * Gamma(2-ALPHA_L, lMin / lMax)
+    Aexp = L_EXCESS / lumExp
+    Nexp = Aexp *  lMax**(1-ALPHA_L) * Gamma(1-ALPHA_L, lMin / lMax)
+
+    return Nexp
 
 def getNumPulsarsAboveThreshold(lMin, lMax):
-    lum = 1/(ALPHA_L - 2) * (lMin **(2 - ALPHA_L) - lMax**(2 - ALPHA_L))
-    A = L_EXCESS / lum
-    nAbove = A *  1/(ALPHA_L - 1) * (L_THRESH **(1 - ALPHA_L) - lMax**(1 - ALPHA_L))
+    lumExp = lMax**(2-ALPHA_L) * Gamma(2-ALPHA_L, lMin / lMax)
+    Aexp = L_EXCESS / lumExp
+    nAbove = Aexp *  lMax**(1-ALPHA_L) * Gamma(1-ALPHA_L, L_THRESH / lMax)
     return nAbove
 
 def getFracLumAboveThreshold(lMin, lMax):
-    # return (lum above thresh) / (lum below thresh)
-    fracAbove = (1/(ALPHA_L - 2) * (L_THRESH **(2 - ALPHA_L) - lMax**(2 - ALPHA_L))) / (1/(ALPHA_L - 2) * (lMin **(2 - ALPHA_L) - L_THRESH**(2 - ALPHA_L)))
+    # return (lum above thresh) / totalLum
+    fracAbove = Gamma(2-ALPHA_L, L_THRESH / lMax) / (Gamma(2-ALPHA_L, lMin / lMax))
     return fracAbove
 
 fig, ax = plt.subplots(figsize=(6,4))
@@ -95,6 +102,6 @@ while ALPHA_L <= ALPHA_L_MAX:
     plotNum+=1
 
 plt.plot(intersectionPointsMax, intersectionPointsMin)
-plt.savefig("contour-vary-alpha-hard.png")
+plt.savefig("contour-vary-alpha-exp.png")
 
 plt.show()

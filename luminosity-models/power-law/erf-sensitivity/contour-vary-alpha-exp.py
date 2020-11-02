@@ -15,10 +15,10 @@ ALPHA_L = ALPHA_L_MIN
 L_EXCESS = 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN_RANGE=[1.0e28, 1.0e34]
-L_MAX_RANGE=[1.0e33, 1.0e37]
+L_MAX_RANGE=[1.0e34, 1.0e36]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
-FRAC_ABOVE_THRESHOLD=1/4.0
+FRAC_ABOVE_THRESHOLD=1/5.0
 
 dimMin= int(log(L_MIN_RANGE[1]/L_MIN_RANGE[0]) / log(POWER_STEP))
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
@@ -42,7 +42,8 @@ def getNumPulsarsAboveThreshold(lMin, lMax):
     return nAbove
 
 def getFracLumAboveThreshold(lMin, lMax):
-    fracAbove = Gamma(2-ALPHA_L, L_THRESH / lMax) / (Gamma(2-ALPHA_L, lMin / lMax) - Gamma(2-ALPHA_L, L_THRESH / lMax))
+    # return (lum above thresh) / totalLum
+    fracAbove = Gamma(2-ALPHA_L, L_THRESH / lMax) / (Gamma(2-ALPHA_L, lMin / lMax))
     return fracAbove
 
 fig, ax = plt.subplots(figsize=(6,4))

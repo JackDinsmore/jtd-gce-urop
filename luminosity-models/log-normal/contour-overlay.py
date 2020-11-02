@@ -12,7 +12,7 @@ SIGMA_L_RANGE=[0.001, 1]
 powerStep =(L_0_RANGE[1] / L_0_RANGE[0])**(1/DIM_TRIALS)
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
-FRAC_ABOVE_THRESHOLD=1/4.0
+FRAC_ABOVE_THRESHOLD=1/5.0
 
 DRAW_EXTRA_CONTOURS = True
 
@@ -27,11 +27,10 @@ def getNumPulsarsAboveThreshold(L, sigma):
     return A * 0.5 * erfc((log(L_THRESH) - log(L)) / (sqrt(2) * sigma * log(10)))# A times number of pulsars above threshold per unit
 
 def getFracLumAboveThreshold(L, sigma):
-    # return (lum above thresh) / (lum below thresh)
+    # return (lum above thresh) / (total lum)
     erfArgument = (sqrt(2) * (sigma**2 * log(10)**2 - log(L_THRESH) + log(L))) / (sigma * log(100))
-    amountAbove = 1 + erf(erfArgument)
-    amountBelow = 1 - erf(erfArgument)
-    return amountAbove / amountBelow
+    amountAbove = 0.5 * (1 + erf(erfArgument))
+    return amountAbove # See the mathematica notebook for a derivation
 
 
 def getMinNumPulsarsInTriangle():
@@ -96,7 +95,8 @@ def getPaperPointInfo(L0 = 0.88e34, sigma = 0.62):
 
 
 getMinNumPulsarsInTriangle()
-pointPlot = getMinPulsarsWithinOneStdevOfSigma()
+minPoint = getMinPulsarsWithinOneStdevOfSigma()
+paperPoint = [0.88e34, 0.62]
 getPaperPointInfo()
 
 
@@ -133,6 +133,8 @@ yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j
 
 
 fig, ax = plt.subplots(figsize=(6, 4))
+plt.xlim(left=L_0_RANGE[0], right=L_0_RANGE[1])
+plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermilab observations', 
     horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))
 
@@ -148,21 +150,31 @@ plt.colorbar(c1, extend='max')
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(xVals, yVals, numAboveThreshold, [1*i for i in range(1, 20)], 
-        colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
+    plt.contour(xVals, yVals, numAboveThreshold, [10*i for i in range(1, 10)], 
+        colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
 plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 1, 0)], linewidths=2)
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(xVals, yVals, fracAboveThreshold, [0.3 * i for i in range(1, 15)], 
-        colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
+    plt.contour(xVals, yVals, fracAboveThreshold, [0.5 * i for i in range(1, 10)], 
+        colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
 plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(1, 0, 0)], linewidths=2)
 
+
+# Plot thresholds
+plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='purple')
+plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='purple')
+plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='purple')
+plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='purple')
+
+plt.scatter(paperPoint[0], paperPoint[1], c='purple')
+plt.scatter(minPoint[0], minPoint[1], c='black')
+
+# Save
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay.png")
 
-plt.scatter(pointPlot[0], pointPlot[1])
 
 plt.show()
