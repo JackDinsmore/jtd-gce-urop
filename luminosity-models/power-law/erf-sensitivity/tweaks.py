@@ -26,9 +26,12 @@ POWER_STEP = 1.11 # 1 is the minimum
 
 ALPHA_L = 1.5#1.93
 L_EXCESS = 6.37e36  # All units are in ergs per second
+    # We assume this is the total luminosity of the excess, not just the luminosity that Fermi can detect.
 L_THRESH = 1.0e34
 L_MIN_RANGE=[1.0e28, 1.0e34]
-L_MAX_RANGE=[1.0e34, 1.0e36]
+L_MAX_RANGE=[2.0e34, 1.0e36]
+
+INTEGRAL_STEPS = 10000
 
 dimMin= int(log(L_MIN_RANGE[1]/L_MIN_RANGE[0]) / log(POWER_STEP))
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
@@ -38,16 +41,44 @@ def Gamma(s, x):
         return (Gamma(s+1, x) - x**s * exp(-x))/s
     return gamma(s) * (1-gammainc(s, x))
 
+def sensitivity(l):
+    if l < L_THRESH:
+        return 0
+    return 1
+
+def expLumFunc(lMin, lMax):
+    return lambda l:l**(-ALPHA_L) * exp(l / lMax)
+
+def hardLumFunc(lMin, lMax):
+    return lambda l:l**(-ALPHA_L)
+
+def integrate(f, lMin, lMax):
+    stepSize = (lMax - lMin) / INTEGRAL_STEPS
+    integral = 0
+    l = lMin
+    while l < lMax:
+        integral += f(l) * stepSize * sensitivity(l)
+        l+= stepSize
+    return integral
+
+def lintegrate(f, lMin, lMax):
+    stepSize = (lMax - lMin) / INTEGRAL_STEPS
+    integral = 0
+    l = lMin
+    while l < lMax:
+        integral += l * f(l) * stepSize
+        l+= stepSize
+    return integral
+
 def getNumPulsars(lMin, lMax):
-    lumHard = 1 / (2 - ALPHA_L) * (lMax**(2-ALPHA_L) - lMin**(2-ALPHA_L))
-    Ahard = L_EXCESS / lumHard
-    Nhard = Ahard / (1 - ALPHA_L) * (lMax**(1-ALPHA_L) - lMin**(1-ALPHA_L))
+    hardUnscaledLum = lintegrate(hardLumFunc(lMin, lMax), lMin, lMax)
+    hardUnscaledNum = integrate(hardLumFunc(lMin, lMax), lMin, lMax)
+    #expUnscaledLum = lintegrate(expLumFunc, lMin, lMax) # Need to write code to do this to infty
+    #expUnscaledNum = integrate(expLumFunc, lMin, lMax)
 
-    lumExp = lMax**(2-ALPHA_L) * Gamma(2-ALPHA_L, lMin / lMax)
-    Aexp = L_EXCESS / lumExp
-    Nexp = Aexp *  lMax**(1-ALPHA_L) * Gamma(1-ALPHA_L, lMin / lMax)
+    nHard = L_EXCESS / hardUnscaledLum * hardUnscaledNum
 
-    return (Nhard, Nexp)
+    return (nHard, 1)
 
 
 print("Paper values:", getNumPulsars(1e29, 1e35))
@@ -61,7 +92,7 @@ for i in range(dimMin):
     lineExp = []
     for j in range(dimMax):
         nHard, nExp = getNumPulsars(L_MIN_RANGE[0] * POWER_STEP**i, L_MAX_RANGE[0] * POWER_STEP**j)
-        lineHard.append(nExp)
+        lineHard.append(nHard)
         lineExp.append(200 * abs(nExp-nHard)/(nExp+nHard))
     numPulsarsHard.append(lineHard)
     numPulsarsExp.append(lineExp)
@@ -80,7 +111,7 @@ ax2.set_xscale("log")
 ax2.set_yscale("log")
 ax2.set_xlabel("Lmax")
 ax2.set_ylabel("Lmin")
-ax1.set_title("Exp cutoff (alpha={0})".format(ALPHA_L))
+ax1.set_title("Number of pulsars: hard cutoff (alpha={0})".format(ALPHA_L))
 ax2.set_title("% Difference between hard and exp (alpha={0})".format(ALPHA_L))
 
 

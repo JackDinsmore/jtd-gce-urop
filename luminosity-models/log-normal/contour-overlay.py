@@ -14,7 +14,8 @@ powerStep =(L_0_RANGE[1] / L_0_RANGE[0])**(1/DIM_TRIALS)
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
 
-DRAW_EXTRA_CONTOURS = True
+DRAW_EXTRA_CONTOURS = False
+DRAW_PLOEG_POINT = True
 
 def getNumPulsars(L, sigma):
     totalLum = exp(0.5 * sigma**2 * log(10)**2) * L
@@ -93,11 +94,21 @@ def getPaperPointInfo(L0 = 0.88e34, sigma = 0.62):
     Fraction luminosity above threshold: {4}""".format(L0, sigma, getNumPulsars(L0, sigma), 
     getNumPulsarsAboveThreshold(L0, sigma), getFracLumAboveThreshold(L0, sigma)))
 
+def getPloegPointInfo(L0, sigma):
+    print("""Ploeg point info:
+    Coordinates: L0 = {0}, sigma = {1}
+    Total num pulsars: {2}
+    Num pulsars above threshold: {3}
+    Fraction luminosity above threshold: {4}""".format(L0, sigma, getNumPulsars(L0, sigma), 
+    getNumPulsarsAboveThreshold(L0, sigma), getFracLumAboveThreshold(L0, sigma)))
+
 
 getMinNumPulsarsInTriangle()
 minPoint = getMinPulsarsWithinOneStdevOfSigma()
 paperPoint = [0.88e34, 0.62]
 getPaperPointInfo()
+ploegPoint = [10**32.206, 0.70585]
+getPloegPointInfo(ploegPoint[0], ploegPoint[1])
 
 
 numPulsars = []
@@ -139,8 +150,8 @@ plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermil
     horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))
 
 plt.xscale("log")
-plt.ylabel("Sigma")
-plt.xlabel("L_0")
+plt.ylabel("$\sigma$")
+plt.xlabel("$L_0$")
 plt.title("Log normal luminosity function")
 
 c1 = plt.pcolor(xVals, yVals, numPulsars, 
@@ -169,6 +180,13 @@ plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='purple')
 
 plt.scatter(paperPoint[0], paperPoint[1], c='purple')
 plt.scatter(minPoint[0], minPoint[1], c='black')
+
+# Ploeg point
+if DRAW_PLOEG_POINT:
+    plt.scatter(ploegPoint[0], ploegPoint[1], c='orange')
+
+
+plt.tight_layout()
 
 # Save
 if(DRAW_EXTRA_CONTOURS):

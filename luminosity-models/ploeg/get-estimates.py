@@ -4,30 +4,30 @@ and generate predictions of how many pulsars Fermi should have seen,
 and how much flux above the threshold it should have seen.
 '''
 
-import sys
-sys.path.insert(1, "../ploeg-plots")
-import display
+import ploegload
 from matplotlib import pyplot as plt
 
 L_EXCESS = 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
-L_MIN = 1.0e29
-L_MAX = 1.1e35
+L_MIN = 1e29
+L_MAX = 1.0e35
 
 outStr = ""
 
-for i in range(3):
-    f = display.LuminosityFunction(i)
+for i in range(5):
+    f = ploegload.LuminosityFunction(i)
     unscaledNumber = f.integrate(minL=L_MIN, maxL=L_MAX)
     unscaledLum = f.lintegrate(minL=L_MIN, maxL=L_MAX)
     unscaledNumberAbove = f.integrate(minL=L_THRESH, maxL=L_MAX)
+    unscaledFluxAbove = f.lintegrate(minL=L_THRESH, maxL=L_MAX)
+    print(unscaledNumber, unscaledLum, unscaledNumberAbove, unscaledFluxAbove)
 
     scale = L_EXCESS / unscaledLum
 
     totalNumber = unscaledNumber * scale
     totalLum = unscaledLum * scale # Should be L_EXCESS
     numberAbove = unscaledNumberAbove * scale
-    R = f.lintegrate(minL=L_THRESH, maxL=L_MAX) / unscaledLum
+    R = unscaledFluxAbove / unscaledLum
 
     addStr = """{0} luminosity function:
     Total number of pulsars:\t\t{1}
