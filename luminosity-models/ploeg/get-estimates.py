@@ -14,7 +14,7 @@ L_MAX = 1.0e35
 
 outStr = ""
 
-for i in range(5):
+for i in range(4):
     f = ploegload.LuminosityFunction(i)
     unscaledNumber = f.integrate(minL=L_MIN, maxL=L_MAX)
     unscaledLum = f.lintegrate(minL=L_MIN, maxL=L_MAX)
@@ -42,6 +42,7 @@ for i in range(5):
 f = open("get-estimates-output.txt", 'w')
 f.write(outStr)
 f.close()
+plt.xlim(left=L_MIN, right=L_MAX)
 plt.axvline(x=L_THRESH, label="Threshold", color='black')
 plt.title("Ploeg luminosity functions")
 plt.legend()

@@ -5,8 +5,8 @@ OUT_FILE = "log-normal-fit.csv"
 LOG_L0 = 32.206
 SIGMA = 0.70585
 
-MIN_LOG_L = 28
-MAX_LOG_L = 37
+MIN_LOG_L = 27
+MAX_LOG_L = 36
 SKIP = 0.001
 
 ALPHA = 1.93

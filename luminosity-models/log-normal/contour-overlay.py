@@ -3,6 +3,8 @@ from math import log, exp, sqrt
 from scipy.special import erfc, erf
 import matplotlib.colors as colors
 
+plt.style.use('latex')
+
 DIM_TRIALS=100
 
 L_EXCESS = 6.37e36  # All units are in ergs per second
@@ -17,19 +19,20 @@ FRAC_ABOVE_THRESHOLD=1/5.0
 DRAW_EXTRA_CONTOURS = False
 DRAW_PLOEG_POINT = True
 
-def getNumPulsars(L, sigma):
-    totalLum = exp(0.5 * sigma**2 * log(10)**2) * L
-    A = L_EXCESS / totalLum
-    return A * 1 # A times number of pulsars per unit
+def getTotalLum(L0, sigma):
+    return exp(0.5 * sigma**2 * log(10)**2) * L0
 
-def getNumPulsarsAboveThreshold(L, sigma):
-    totalLum = exp(0.5 * sigma**2 * log(10)**2) * L
-    A = L_EXCESS / totalLum
-    return A * 0.5 * erfc((log(L_THRESH) - log(L)) / (sqrt(2) * sigma * log(10)))# A times number of pulsars above threshold per unit
+def getNumPulsars(L0, sigma):
+    scale = L_EXCESS / getTotalLum(L0, sigma)
+    return scale * 1 # scale times number of pulsars per unit
 
-def getFracLumAboveThreshold(L, sigma):
+def getNumPulsarsAboveThreshold(L0, sigma):
+    scale = L_EXCESS / getTotalLum(L0, sigma)
+    return scale * 0.5 * erfc((log(L_THRESH) - log(L0)) / (sqrt(2) * sigma * log(10)))
+
+def getFracLumAboveThreshold(L0, sigma):
     # return (lum above thresh) / (total lum)
-    erfArgument = (sqrt(2) * (sigma**2 * log(10)**2 - log(L_THRESH) + log(L))) / (sigma * log(100))
+    erfArgument = sqrt(2) * (sigma**2 * log(10)**2 - log(L_THRESH) + log(L0)) / (sigma * log(100))
     amountAbove = 0.5 * (1 + erf(erfArgument))
     return amountAbove # See the mathematica notebook for a derivation
 
@@ -112,42 +115,36 @@ getPloegPointInfo(ploegPoint[0], ploegPoint[1])
 
 
 numPulsars = []
-for j in range(DIM_TRIALS):
-    line = []
-    for i in range(DIM_TRIALS):
-        n = getNumPulsars(L_0_RANGE[0] * powerStep**i, 
-            SIGMA_L_RANGE[0]  + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j)
-        line.append(n)
-    numPulsars.append(line)
-
 numAboveThreshold = []
-for j in range(DIM_TRIALS):
-    line = []
-    for i in range(DIM_TRIALS):
-        n = getNumPulsarsAboveThreshold(L_0_RANGE[0] * powerStep**i, 
-            SIGMA_L_RANGE[0]  + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j)
-        line.append(n)
-    numAboveThreshold.append(line)
-
 fracAboveThreshold = []
 for j in range(DIM_TRIALS):
-    line = []
+    lineNumPulsars = []
+    lineNumAboveThreshold = []
+    lineFracAboveThreshold = []
     for i in range(DIM_TRIALS):
-        frac = getFracLumAboveThreshold(L_0_RANGE[0] * powerStep**i, 
-            SIGMA_L_RANGE[0]  + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j)
-        line.append(frac)
-    fracAboveThreshold.append(line)
+        L0 = L_0_RANGE[0] * powerStep**i
+        sigma =  SIGMA_L_RANGE[0]  + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j
+
+        numNow = getNumPulsars(L0, sigma)
+        numAbove = getNumPulsarsAboveThreshold(L0, sigma)
+        fracAbove = getFracLumAboveThreshold(L0, sigma)
+
+        lineNumPulsars.append(numNow)
+        lineNumAboveThreshold.append(numAbove)
+        lineFracAboveThreshold.append(fracAbove)
+
+    numPulsars.append(lineNumPulsars)
+    numAboveThreshold.append(lineNumAboveThreshold)
+    fracAboveThreshold.append(lineFracAboveThreshold)
 
 
 xVals = [L_0_RANGE[0] * powerStep**i for i in range(DIM_TRIALS)]
 yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j for j in range(DIM_TRIALS)]
 
 
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots(figsize=(7, 5))
 plt.xlim(left=L_0_RANGE[0], right=L_0_RANGE[1])
 plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
-plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermilab observations', 
-    horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
@@ -156,35 +153,40 @@ plt.title("Log normal luminosity function")
 
 c1 = plt.pcolor(xVals, yVals, numPulsars, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),
-                   vmax=max([max(v) for v in numPulsars])), cmap='PuBu_r')
+                   vmax=max([max(v) for v in numPulsars])), cmap='Greys_r')
 plt.colorbar(c1, extend='max')
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, numAboveThreshold, [10*i for i in range(1, 10)], 
         colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 1, 0)], linewidths=2)
+plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="Number constraint")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, fracAboveThreshold, [0.5 * i for i in range(1, 10)], 
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(1, 0, 0)], linewidths=2)
+plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="Fraction constraint")
 
 
 # Plot thresholds
-plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='purple')
-plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='purple')
-plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='purple')
-plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='purple')
+plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='blue', linewidth=1)
+plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='blue', linewidth=1)
+plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
+plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
 
-plt.scatter(paperPoint[0], paperPoint[1], c='purple')
-plt.scatter(minPoint[0], minPoint[1], c='black')
+plt.scatter(paperPoint[0], paperPoint[1], c='blue')
+plt.scatter(minPoint[0], minPoint[1], c='cyan')
+
+from matplotlib.lines import Line2D
 
 # Ploeg point
 if DRAW_PLOEG_POINT:
-    plt.scatter(ploegPoint[0], ploegPoint[1], c='orange')
+    plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
 
+custom_lines = [Line2D([0], [0], color='black', lw=2),
+                Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
+plt.legend(custom_lines, ['Number constraint', 'fraction constraint'])
 
 plt.tight_layout()
 
@@ -193,6 +195,5 @@ if(DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay.png")
-
 
 plt.show()

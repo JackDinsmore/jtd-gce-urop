@@ -1,12 +1,12 @@
 from matplotlib import pyplot as plt
-from math import log10
+from math import log10, exp
 
 DEBUG = True
 
 DISK=0
 BOXY_BULGE = 1
 NUCLEAR_BULGE = 2
-FAKE_DISK = 3
+LOG_NORMAL_FIT = 3
 
 INTEGRATION_LOG_STEP = 0.0001
 
@@ -23,14 +23,15 @@ class LuminosityFunction:
         f.close()
         for line in lines:
             if line == '': continue
-            x, y = line.split(",")
-            self.data.append([float(x), float(y)])
+            x, y = line.split(",")# log L, dn/dlog L
+            newY = log10(exp(1)) / 10**float(x) * float(y) #10**float(x)*float(y)*log(10)
+            self.data.append([float(x), newY])# log L, dn/ dL
         
         self.leftPoint = self.data[0]
         self.rightPoint = self.data[-1]
 
         self.base = None
-        if popType not in [DISK, FAKE_DISK]:
+        if popType not in [DISK, LOG_NORMAL_FIT]:
             self.base = LuminosityFunction(DISK)
 
     def __call__(self, l): # L given in decimal
@@ -67,11 +68,11 @@ class LuminosityFunction:
                         / (self.data[rightIndex][0] - self.data[leftIndex][0])
 
     def getName(self):
-        names = ["Disk", "Boxy bulge", "Nuclear bulge", "Log normal fit", "Power law test"]
+        names = ["Disk", "Boxy bulge", "Nuclear bulge", "Log normal fit"]
         return names[self.popType]
 
     def getFile(self):
-        files = ["disk.csv", "boxy-bulge.csv", "nuclear-bulge.csv", "log-normal-fit.csv", "power-law.csv"]
+        files = ["disk.csv", "boxy-bulge.csv", "nuclear-bulge.csv", "log-normal-fit.csv"]
         return PREPEND + files[self.popType]
 
     def display(self):
@@ -84,8 +85,8 @@ class LuminosityFunction:
             y.append(self.callWithLogLum(logl))
             logl += step
         plt.title("{0} luminosity function".format(self.getName()))
-        plt.xlabel("Luminosity [erg s^(-1)]")
-        plt.ylabel("Probability density")
+        plt.xlabel("Luminosity [erg s$^{-1}$]")
+        plt.ylabel("dN/dL")
         plt.xscale('log')
         plt.plot(x, y, label=self.getName())
 
