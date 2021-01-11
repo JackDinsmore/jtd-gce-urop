@@ -54,6 +54,7 @@ plt.xlabel("Flux received (ergs / cm^2 / s)")
 plt.ylabel("Point source count")
 plt.xscale('log')
 plt.title("Histogram of point source fluxes (0.1-100 GeV range)")
+plt.savefig("flux.png")
 
 
 # Generate luminosity histogram
@@ -68,4 +69,6 @@ plt.ylabel("Point source count")
 plt.xscale('log')
 plt.axvline(x=1e34, ymin=0, ymax=data.shape[0], color='k')
 plt.title("Histogram of point source luminosities (0.1-100 GeV range)")
+plt.savefig("luminosity.png")
+
 plt.show()
