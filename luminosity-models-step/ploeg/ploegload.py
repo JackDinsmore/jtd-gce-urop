@@ -8,9 +8,9 @@ BOXY_BULGE = 1
 NUCLEAR_BULGE = 2
 LOG_NORMAL_FIT = 3
 
-INTEGRATION_LOG_STEP = 0.0001
+INTEGRATION_LOG_STEP = 0.001
 
-PREPEND = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models/ploeg/data/" # Change if you use this on a different system
+PREPEND = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-step/ploeg/data/" # Change if you use this on a different system
 
 class LuminosityFunction:
     def __init__(self, popType):
@@ -100,17 +100,6 @@ class LuminosityFunction:
         if maxL < minL:
             return -self.integrate(minL=maxL, maxL=minL)
 
-
-        
-        '''SKIP = (maxL - minL) / 100000
-        l = minL
-        integral = 0
-        while l < maxL:
-            # Trapezoidal integration
-            integral += self.__call__(l) * SKIP
-            l += SKIP
-        return integral'''
-
         logl = log10(minL)
         integral = 0
         while logl < log10(maxL):
@@ -132,15 +121,6 @@ class LuminosityFunction:
             return 0
         if maxL < minL:
             return -self.lintegrate(minL=maxL, maxL=minL)
- 
-        '''SKIP = (maxL - minL) / 100000
-        l = minL
-        integral = 0
-        while l < maxL:
-            # Trapezoidal integration
-            integral += l * self.__call__(l) * SKIP
-            l += SKIP
-        return integral'''
 
         logl = log10(minL)
         integral = 0
@@ -179,9 +159,9 @@ def plotAll():
     plt.savefig("all-plots.png")
 
 if __name__ == "__main__":
-    f = LuminosityFunction(DISK)
-    g = LuminosityFunction(BOXY_BULGE)
-    h = LuminosityFunction(NUCLEAR_BULGE)
-    print(f.integrate(1e30,1e35))
-    print(g.integrate(1e30,1e35))
-    print(h.integrate(1e30,1e35))
+    f = LuminosityFunction(LOG_NORMAL_FIT)
+    norm = f.integrate()
+    print(f.integrate(10**31.28))
+    print(f.lintegrate(10**31.28))
+    print(f.integrate(10**31.28) / norm)
+    print(f.lintegrate(10**31.28) / norm)

@@ -107,6 +107,7 @@ class LuminosityFunction:
         y=[self.getValue(l) for l in x]
         plt.plot(x, y, label=self.name)
 
+
 lumFuncs = [LuminosityFunction("NFW PS", -0.66, 18.2, 1.76e-10),
             LuminosityFunction("Disk PS", 1.40, 17.5, 6.8e-9)
             ]

@@ -2,13 +2,14 @@ from matplotlib import pyplot as plt
 from math import log, exp
 from scipy.special import gammainc, gamma
 import matplotlib.colors as colors
+from matplotlib.lines import Line2D
 
 plt.style.use('latex')
 
 POWER_STEP = 1.1 # 1 is the minimum
 
 ALPHA_L = 1.94
-L_EXCESS = 6.37e36  # All units are in ergs per second
+L_EXCESS = 6.756e36# 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN_RANGE=[1.0e28, 1.0e34]
 L_MAX_RANGE=[1.0e34, 1.0e36]
@@ -47,7 +48,13 @@ def getFracLumAboveThreshold(lMin, lMax):
     return fracAbove
 
 
-print("Paper values:", getNumPulsars(1e29, 1e35))
+print("""Paper point info:
+    Coordinates: L0 = {0}, sigma = {1}
+    Total num pulsars: {2}
+    Num pulsars above threshold: {3}
+    Fraction luminosity above threshold: {4}""".format(paperPoint[1], paperPoint[0], getNumPulsars(paperPoint[1], paperPoint[0]), 
+    getNumPulsarsAboveThreshold(paperPoint[1], paperPoint[0]), getFracLumAboveThreshold(paperPoint[1], paperPoint[0])))
+
 print("Delta function values:", getNumPulsars(L_THRESH, L_THRESH*1.0001))
 
 
@@ -103,36 +110,41 @@ lMaxVals = [L_MAX_RANGE[0] * POWER_STEP**j for j in range(dimMax)]
 getGreenYIntercept()
 
 
-fig, ax = plt.subplots(figsize=(6,4))
-plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermilab observations', 
-    horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))
+fig, ax = plt.subplots(figsize=(7, 5))
+'''plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermilab observations', 
+    horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))'''
 
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("Lmax")
-plt.ylabel("Lmin")
-plt.title("Exp cutoff (alpha={0})".format(ALPHA_L))
+plt.xlabel("$L_{max}$")
+plt.ylabel("$L_{min}$")
+plt.title("Power law luminosity functions ($\\alpha$={0})".format(ALPHA_L))
 
 c1 = plt.pcolor(lMaxVals, lMinVals, numPulsars, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),
-                   vmax=max([max(v) for v in numPulsars])), cmap='PuBu_r')
+                   vmax=max([max(v) for v in numPulsars])), cmap='Greys_r')
 cbar = plt.colorbar(c1, extend='max')
-cbar.set_label("Number of MSPs")
+cbar.set_label("$N$")
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, numAboveThreshold, [10*i for i in range(1, 20)], 
         colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 1, 0)], linewidths=2)
+plt.contour(lMaxVals, lMinVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="$N_r=47$")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [0.1*i for i in range(1, 15)], 
         colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(1, 0, 0)], linewidths=2)
+plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
 
 
 plt.scatter(paperPoint[0], paperPoint[1], c='purple')
+
+custom_lines = [Line2D([0], [0], color='black', lw=2),
+                Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
+plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
+plt.tight_layout()
 
 
 if(DRAW_EXTRA_CONTOURS):

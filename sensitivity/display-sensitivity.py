@@ -14,7 +14,7 @@ from astropy.io import fits
 image_file = "detthresh_P8R3_source_10years_PL22.fits"
 
 hdu_list = fits.open(image_file)
-hdu_list.info()
+#hdu_list.info()
 
 image_data = hdu_list[0].data
 print('\n'.join(str(hdu_list[0].header).split('/ ')))

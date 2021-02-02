@@ -2,12 +2,13 @@ from matplotlib import pyplot as plt
 from math import log, exp, sqrt
 from scipy.special import erfc, erf
 import matplotlib.colors as colors
+from matplotlib.lines import Line2D
 
 plt.style.use('latex')
 
 DIM_TRIALS=100
 
-L_EXCESS = 6.37e36  # All units are in ergs per second
+L_EXCESS = 6.756e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_0_RANGE=[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
@@ -110,7 +111,7 @@ getMinNumPulsarsInTriangle()
 minPoint = getMinPulsarsWithinOneStdevOfSigma()
 paperPoint = [0.88e34, 0.62]
 getPaperPointInfo()
-ploegPoint = [10**32.206, 0.70585]
+ploegPoint = [10**32.20641612096041, 0.7003367947758609]
 getPloegPointInfo(ploegPoint[0], ploegPoint[1])
 
 
@@ -149,36 +150,36 @@ plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 plt.xscale("log")
 plt.ylabel("$\sigma$")
 plt.xlabel("$L_0$")
-plt.title("Log normal luminosity function")
+plt.title("Log normal luminosity functions")
 
 c1 = plt.pcolor(xVals, yVals, numPulsars, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),
                    vmax=max([max(v) for v in numPulsars])), cmap='Greys_r')
-plt.colorbar(c1, extend='max')
+cbar = plt.colorbar(c1, extend='max')
+cbar.set_label("$N$")
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, numAboveThreshold, [10*i for i in range(1, 10)], 
         colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="Number constraint")
+plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="$N_r=47$")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, fracAboveThreshold, [0.5 * i for i in range(1, 10)], 
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="Fraction constraint")
+plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
 
 
 # Plot thresholds
-plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='blue', linewidth=1)
-plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='blue', linewidth=1)
-plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
-plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
+#plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='blue', linewidth=1)
+#plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='blue', linewidth=1)
+#plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
+#plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
 
 plt.scatter(paperPoint[0], paperPoint[1], c='blue')
-plt.scatter(minPoint[0], minPoint[1], c='cyan')
+#plt.scatter(minPoint[0], minPoint[1], c='cyan')
 
-from matplotlib.lines import Line2D
 
 # Ploeg point
 if DRAW_PLOEG_POINT:
@@ -186,7 +187,7 @@ if DRAW_PLOEG_POINT:
 
 custom_lines = [Line2D([0], [0], color='black', lw=2),
                 Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
-plt.legend(custom_lines, ['Number constraint', 'fraction constraint'])
+plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
 
 plt.tight_layout()
 

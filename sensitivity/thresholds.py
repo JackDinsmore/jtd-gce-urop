@@ -26,6 +26,8 @@ CM_PER_KPC = 3.086e21
 
 DISPLAY_SIZE = 20.0
 THRESHOLD = 1e34
+NUM_X_LABELS = 8
+NUM_Y_LABELS = 8
 
 def fluxToThresholdLuminosity(flux):
     return flux * (4 * pi * (DIST_TO_CENTER * CM_PER_KPC) ** 2)
@@ -38,21 +40,20 @@ image_data = hdu_list[0].data
 hdu_list.close()
 
 lum_data = np.zeros_like(image_data)
-print(image_data.shape)
 deltaLat = pi / image_data.shape[0]
 deltaLon = 2 * pi / image_data.shape[1]
-print(deltaLat, deltaLon)
 
 trimmed_flux_data = []
 trimmed_lum_data = []
 for x in range(len(image_data)):
-    #print("Latitude:", x * deltaLat * 180 / pi - 90)
     fluxLine = []
     lumLine = []
     for y in range(len(image_data[x])):
         flux = image_data[x][y]
         lat = x * deltaLat - pi / 2
         lon = y * deltaLon - pi
+        if abs(lat) < 2 * pi / 180:
+            flux = np.nan#1e-12
         if abs(lat) > DISPLAY_SIZE * pi / 180 or abs(lon) > DISPLAY_SIZE * pi / 180:
             lum_data[x][y] = 0.1
         else:
@@ -66,34 +67,30 @@ for x in range(len(image_data)):
 
 trimmed_flux_data = np.asarray(trimmed_flux_data)
 trimmed_lum_data = np.asarray(trimmed_lum_data)
-print(trimmed_flux_data)
-print(trimmed_lum_data)
 
 
 # Display flux data:
 plt.figure()
 c = plt.imshow(trimmed_flux_data, 
-                   norm=colors.LogNorm(vmin=np.percentile(trimmed_flux_data, 7),
-                   vmax=np.percentile(trimmed_flux_data, 99)))
+                   norm=colors.LogNorm(vmin=np.nanmin(trimmed_flux_data),
+                   vmax=np.nanpercentile(trimmed_flux_data, 99)))
 cbar = plt.colorbar(c)
-cbar.set_label("erg/cm^2/s")
+cbar.set_label("$F_{th}(b, \\ell)$ (erg/cm$^2$/s)")
 
 plt.title("Fermi LAT flux sensitivity (0.1-100 GeV)")
-NUM_X_LABELS = 8
 xPositions = np.arange(0, trimmed_flux_data.shape[1], trimmed_flux_data.shape[1]//NUM_X_LABELS) # pixel count at label position
-xLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_X_LABELS+1)[:-1] # labels you want to see
-xPositions = xPositions[:NUM_X_LABELS]
-plt.xticks(xPositions, xLabels)
+xLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_X_LABELS+1) # labels you want to see
+np.append(xPositions, trimmed_flux_data.shape[1])
+plt.xticks(xPositions, [int(i) for i in xLabels])
 
-NUM_Y_LABELS = 5
 yPositions = np.arange(0, trimmed_flux_data.shape[0], trimmed_flux_data.shape[0]//NUM_Y_LABELS) # pixel count at label position
-yLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_Y_LABELS+1)[:-1] # labels you want to see
-yPositions = yPositions[:NUM_Y_LABELS]
-plt.yticks(yPositions, yLabels)
-plt.xlabel("latitude (deg)")
-plt.ylabel("longitude (deg)")
+yLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_Y_LABELS+1) # labels you want to see
+np.append(yPositions, trimmed_flux_data.shape[0])
+plt.yticks(yPositions, [int(i) for i in yLabels])
+plt.xlabel("$\\ell$ (deg)")
+plt.ylabel("$b$ (deg)")
 plt.tight_layout()
-plt.savefig("sensitivity.png")
+plt.savefig("flux-thresholds.png")
 
 # Cut luminosity data
 '''for x in range(len(trimmed_lum_data)):
@@ -106,23 +103,23 @@ plt.savefig("sensitivity.png")
 
 plt.figure()
 c = plt.imshow(trimmed_lum_data, 
-                   norm=colors.LogNorm(vmin=np.percentile(trimmed_lum_data, 7),
-                   vmax=np.percentile(trimmed_lum_data, 99)))
+                   norm=colors.LogNorm(vmin=np.nanmin(trimmed_lum_data),
+                   vmax=np.nanpercentile(trimmed_lum_data, 99)))
 cbar = plt.colorbar(c)
-cbar.set_label("erg/s")
+cbar.set_label("$L_{th}(b, \\ell)$ (erg/s)")
 
 plt.title("Fermi LAT luminosity threshold (0.1-100 GeV)")
 xPositions = np.arange(0, trimmed_lum_data.shape[1], trimmed_lum_data.shape[1]//NUM_X_LABELS) # pixel count at label position
-xLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_X_LABELS+1)[:-1] # labels you want to see
-xPositions = xPositions[:NUM_X_LABELS]
-plt.xticks(xPositions, xLabels)
+xLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_X_LABELS+1) # labels you want to see
+np.append(xPositions, trimmed_flux_data.shape[1])
+plt.xticks(xPositions, [int(i) for i in xLabels])
 yPositions = np.arange(0, trimmed_lum_data.shape[0], trimmed_lum_data.shape[0]//NUM_Y_LABELS) # pixel count at label position
-yLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_Y_LABELS+1)[:-1] # labels you want to see
-yPositions = yPositions[:NUM_Y_LABELS]
-plt.yticks(yPositions, yLabels)
+yLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_Y_LABELS+1) # labels you want to see
+np.append(yPositions, trimmed_flux_data.shape[0])
+plt.yticks(yPositions, [int(i) for i in yLabels])
 
-plt.xlabel("latitude (deg)")
-plt.ylabel("longitude (deg)")
+plt.xlabel("$\\ell$ (deg)")
+plt.ylabel("$b$ (deg)")
 plt.tight_layout()
 plt.savefig("luminosity-thresholds.png")
 plt.show()
