@@ -18,6 +18,7 @@ NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
 
 DRAW_EXTRA_CONTOURS = False
+LINE_COLOR = (0.8, 0.3, 0.1)
 DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
@@ -85,20 +86,13 @@ plt.colorbar(c1, extend='max')
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, numSeen, [10*i for i in range(1, 10)], 
         colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="Number constraint")
+plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="Number constraint")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, lumSeen, [0.5 * i for i in range(1, 10)], 
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="Fraction constraint")
-
-
-# Plot thresholds
-plt.plot(L_0_RANGE, [0.62-0.16, 0.62-0.16], c='blue', linewidth=1)
-plt.plot(L_0_RANGE, [0.62+0.15, 0.62+0.15], c='blue', linewidth=1)
-plt.plot([(0.88-0.41) * 1e34, (0.88-0.41) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
-plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
+plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="Fraction constraint")
 
 plt.scatter(paperPoint[0], paperPoint[1], c='blue')
 #plt.scatter(minPoint[0], minPoint[1], c='cyan')
@@ -109,8 +103,8 @@ from matplotlib.lines import Line2D
 if DRAW_PLOEG_POINT:
     plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
 
-custom_lines = [Line2D([0], [0], color='black', lw=2),
-                Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
+                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
 plt.legend(custom_lines, ['Number constraint', 'fraction constraint'])
 
 plt.tight_layout()

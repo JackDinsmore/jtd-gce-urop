@@ -18,6 +18,7 @@ NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
 
 DRAW_EXTRA_CONTOURS = False
+LINE_COLOR = (0.8, 0.3, 0.1)
 
 dimMin= int(log(L_MIN_RANGE[1]/L_MIN_RANGE[0]) / log(POWER_STEP))
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
@@ -130,19 +131,19 @@ cbar.set_label("$N$")
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, numAboveThreshold, [10*i for i in range(1, 20)], 
         colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="$N_r=47$")
+plt.contour(lMaxVals, lMinVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r=47$")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [0.1*i for i in range(1, 15)], 
         colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
+plt.contour(lMaxVals, lMinVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
 
 
 plt.scatter(paperPoint[0], paperPoint[1], c='purple')
 
-custom_lines = [Line2D([0], [0], color='black', lw=2),
-                Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
+                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
 plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
 plt.tight_layout()
 

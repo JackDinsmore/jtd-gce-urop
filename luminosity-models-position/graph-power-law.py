@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as colors
 from math import log
 import numpy as np
+from matplotlib.lines import Line2D
 
 plt.style.use('latex')
 
@@ -25,6 +26,7 @@ NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=0.2
 
 DRAW_EXTRA_CONTOURS = False
+LINE_COLOR = (0.8, 0.3, 0.1)
 PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/power-law/"
 
 # ========================== Load data ===========================
@@ -69,9 +71,7 @@ dimMax = len(totalNum[0])
 lMinVals = [L_MIN_RANGE[0] * POWER_STEP**i for i in range(dimMin)]
 lMaxVals = [L_MAX_RANGE[0] * POWER_STEP**j for j in range(dimMax)]
 
-fig, ax = plt.subplots(figsize=(6,4))
-plt.text(0.95, 0.95, 'Green: number limit\nRed: luminosity limit', 
-    horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))
+fig, ax = plt.subplots(figsize=(7, 5))
 
 plt.xscale("log")
 plt.yscale("log")
@@ -81,29 +81,35 @@ plt.title("Exp cutoff (alpha={0})".format(ALPHA))
 
 c1 = plt.pcolor(lMaxVals, lMinVals, totalNum, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
-                   vmax=max([max(v) for v in totalNum])), cmap='PuBu_r')
+                   vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
 cbar = plt.colorbar(c1, extend='max')
-cbar.set_label("Number of MSPs")
+cbar.set_label("$N$")
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, numSeen, [10*i for i in range(1, 20)], 
         colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 1, 0)], linewidths=2)
+plt.contour(lMaxVals, lMinVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r=47$")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(lMaxVals, lMinVals, lumSeen, [0.1*i for i in range(1, 15)], 
         colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[(1, 0, 0)], linewidths=2)
+plt.contour(lMaxVals, lMinVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
+
 
 
 plt.scatter(paperPoint[0], paperPoint[1], c='purple')
 
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
+                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
+plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
+plt.tight_layout()
+
 
 if(DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE+"overlay-extra.png")
+    plt.savefig(PATH_TO_FILE + "overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE+"overlay.png")
+    plt.savefig(PATH_TO_FILE + "overlay.png")
 
 plt.show()

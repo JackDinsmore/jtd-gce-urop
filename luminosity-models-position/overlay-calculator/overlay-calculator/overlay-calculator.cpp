@@ -488,7 +488,7 @@ int powerLaw() {
 
 	std::cout << writeText << std::endl;
 	std::ofstream recordFile;
-	recordFile.open(ROOT L"luminosity-models-position/data/power-law/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data/power-law/record.txt");
 	recordFile << writeText;
 
 	// Generate unscaled data

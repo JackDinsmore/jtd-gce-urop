@@ -16,6 +16,7 @@ powerStep =(L_0_RANGE[1] / L_0_RANGE[0])**(1/DIM_TRIALS)
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
+LINE_COLOR = (0.8, 0.3, 0.1)
 
 DRAW_EXTRA_CONTOURS = False
 DRAW_PLOEG_POINT = True
@@ -162,13 +163,13 @@ cbar.set_label("$N$")
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, numAboveThreshold, [10*i for i in range(1, 10)], 
         colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linewidths=2, label="$N_r=47$")
+plt.contour(xVals, yVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r=47$")
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, fracAboveThreshold, [0.5 * i for i in range(1, 10)], 
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[(0, 0, 0)], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
+plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
 
 
 # Plot thresholds
@@ -185,8 +186,8 @@ plt.scatter(paperPoint[0], paperPoint[1], c='blue')
 if DRAW_PLOEG_POINT:
     plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
 
-custom_lines = [Line2D([0], [0], color='black', lw=2),
-                Line2D([0], [0], color='black', lw=2, dashes=(4, 2))]
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
+                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
 plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
 
 plt.tight_layout()

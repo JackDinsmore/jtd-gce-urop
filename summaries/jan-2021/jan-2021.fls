@@ -361,9 +361,9 @@ INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/luminosity-h
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-thresholds.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-thresholds.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-thresholds.png
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour.png
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour.png
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-step.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-step.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-step.png
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm
@@ -373,9 +373,15 @@ INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/latex-fonts/lasy9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy9.tfm
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour.png
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour.png
-INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-step.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-step.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-step.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-position.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-position.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law-contour-position.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-position.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-position.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal-contour-position.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.aux
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb
