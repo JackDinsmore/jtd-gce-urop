@@ -4,6 +4,8 @@ from scipy.special import erfc, erf
 import matplotlib.colors as colors
 import numpy as np
 
+from matplotlib.lines import Line2D
+
 plt.style.use('latex')
 
 
@@ -25,6 +27,21 @@ paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 
 PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/log-normal/"
+SHADE_SCALE=25
+
+def shade(field, threshold, xs, ys, off=False):
+    px = []
+    py = []
+    for x in range(0 if off else 1, SHADE_SCALE, 1):
+        inx = int(float(x) / SHADE_SCALE * field.shape[1])
+        for y in range(0 if off else 1, SHADE_SCALE, 1):
+            iny = int(float(y) / SHADE_SCALE * field.shape[0])
+            if field[iny][inx] < threshold:
+                fracx = float(x) / SHADE_SCALE * field.shape[1] - inx
+                fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
+                px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
+                py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.5)
 
 # ========================== Load data ===========================
 
@@ -97,15 +114,21 @@ plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], 
 plt.scatter(paperPoint[0], paperPoint[1], c='blue')
 #plt.scatter(minPoint[0], minPoint[1], c='cyan')
 
-from matplotlib.lines import Line2D
+# Observation
+shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
+shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
-# Ploeg point
+
+# Final points 
+
 if DRAW_PLOEG_POINT:
     plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
                 Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
-plt.legend(custom_lines, ['Number constraint', 'fraction constraint'])
+plt.legend(custom_lines, ['Number constraint', 'fraction constraint'], loc="upper right")
+plt.xlim(xVals[0], xVals[-1])
+plt.ylim(yVals[0], yVals[-1])
 
 plt.tight_layout()
 

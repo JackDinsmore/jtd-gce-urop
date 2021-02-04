@@ -28,6 +28,36 @@ FRAC_ABOVE_THRESHOLD=0.2
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR = (0.8, 0.3, 0.1)
 PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/power-law/"
+SHADE_SCALE=25
+
+def shade(field, threshold, xs, ys, off=False):
+    px = []
+    py = []
+    for x in range(0 if off else 1, SHADE_SCALE, 1):
+        inx = int(float(x) / SHADE_SCALE * field.shape[1])
+        for y in range(0 if off else 1, SHADE_SCALE, 1):
+            iny = int(float(y) / SHADE_SCALE * field.shape[0])
+            if field[iny][inx] < threshold:
+                fracx = float(x) / SHADE_SCALE * field.shape[1] - inx
+                fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
+                px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
+                py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.5)
+SHADE_SCALE=25
+
+def shade(field, threshold, xs, ys, off=False):
+    px = []
+    py = []
+    for x in range(0 if off else 1, SHADE_SCALE, 1):
+        inx = int(float(x) / SHADE_SCALE * field.shape[1])
+        for y in range(0 if off else 1, SHADE_SCALE, 1):
+            iny = int(float(y) / SHADE_SCALE * field.shape[0])
+            if field[iny][inx] < threshold:
+                fracx = float(x) / SHADE_SCALE * field.shape[1] - inx
+                fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
+                px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
+                py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.5)
 
 # ========================== Load data ===========================
 
@@ -97,13 +127,20 @@ if(DRAW_EXTRA_CONTOURS):
         colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
 plt.contour(lMaxVals, lMinVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
 
+# Observation
+shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, lMaxVals, lMinVals)
+shade(lumSeen, FRAC_ABOVE_THRESHOLD, lMaxVals, lMinVals, True)
 
+
+# Final points
 
 plt.scatter(paperPoint[0], paperPoint[1], c='purple')
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
                 Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
 plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
+plt.xlim(lMaxVals[0], lMaxVals[-1])
+plt.ylim(lMinVals[0], lMinVals[-1])
 plt.tight_layout()
 
 

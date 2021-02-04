@@ -7,7 +7,7 @@ plt.style.use('latex')
 
 hdul = fits.open('gll_psc_v27.fit')
 hdul.info()
-#print('\n'.join(str(hdul[1].header).split("/")))
+print('\n'.join(str(hdul[1].header).split("/")))
 data = hdul[1].data
 hdul.close()
 

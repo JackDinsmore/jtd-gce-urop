@@ -24,6 +24,8 @@ PI = 3.1415926535
 L_MIN = None
 L_MAX = None
 
+CUTOFF_MINIMUM = 1e29
+
 global outStr
 outStr = ""
 
@@ -34,39 +36,21 @@ class LuminosityFunction:
         self.nAbove = nAbove
         self.lBreak = fluxBreak * ERGS_PER_PHOTON * (4 * PI * (DIST_FROM_GALACTIC_CENTER_KILOPARSEC * CM_PER_KILOPARSEC)**2)
     
-    def integrate(self, minL, maxL):
-        lowC = self.lBreak if maxL == None else min(maxL, self.lBreak)
-        highC = self.lBreak if minL == None else max(minL, self.lBreak)
-        low=0
-        high=0
-        if minL == None:
-            #assert(self.nBelow < 1)
-            low = self.lBreak / (1 - self.nBelow) * (lowC / self.lBreak)**(1 - self.nBelow)
-        elif minL < self.lBreak:
-            low = self.lBreak / (1 - self.nBelow) * ((lowC / self.lBreak)**(1 - self.nBelow) - (minL / self.lBreak)**(1 - self.nBelow))
-        if maxL == None:
-            #assert(self.nAbove > 1)
-            high = self.lBreak / (self.nAbove - 1) * (self.lBreak / highC)**(self.nAbove - 1)
-        elif maxL > self.lBreak:
-            high = self.lBreak / (self.nAbove - 1) * ((self.lBreak / highC)**(self.nAbove - 1) - (self.lBreak / maxL)**(self.nAbove - 1))
-        return low+high
+    def integrate(self, minL):
+        if minL is None: minL = CUTOFF_MINIMUM
+        nptfPremul = (self.nBelow - self.nAbove) / (self.nBelow - self.nAbove - (1 - self.nAbove) * pow(CUTOFF_MINIMUM / self.lBreak, 1 - self.nBelow))
+        if (minL < self.lBreak):
+            return nptfPremul * (1 - (self.lBreak / minL) ** (self.nBelow - 1) * (self.nAbove - 1) / (self.nAbove - self.nBelow))
+        else:
+            return nptfPremul * (self.lBreak / minL) ** (self.nAbove - 1) * (1 - self.nBelow) / (self.nAbove - self.nBelow)
 
-    def lintegrate(self, minL, maxL):
-        lowC = self.lBreak if maxL == None else min(maxL, self.lBreak)
-        highC = self.lBreak if minL == None else max(minL, self.lBreak)
-        low=0
-        high=0
-        if minL == None:
-            #assert(self.nBelow < 2)
-            low = self.lBreak**2 / (2 - self.nBelow) * (lowC / self.lBreak)**(2 - self.nBelow)
-        elif minL < self.lBreak:
-            low = self.lBreak**2 / (2 - self.nBelow) * ((lowC / self.lBreak)**(2 - self.nBelow) - (minL / self.lBreak)**(2 - self.nBelow))
-        if maxL == None:
-            #assert(self.nAbove > 2)
-            high = self.lBreak**2 / (self.nAbove - 2) * (self.lBreak / highC)**(self.nAbove - 2)
-        elif maxL > self.lBreak:
-            high = self.lBreak**2 / (self.nAbove - 2) * ((self.lBreak / highC)**(self.nAbove - 2) - (self.lBreak / maxL)**(self.nAbove - 2))
-        return low+high
+    def lintegrate(self, minL):
+        if minL is None: minL = CUTOFF_MINIMUM
+        nptfPremul = (self.nBelow - self.nAbove) / (self.nBelow - self.nAbove - (1 - self.nAbove) * pow(CUTOFF_MINIMUM / self.lBreak, 1 - self.nBelow))
+        if minL < self.lBreak:
+            return nptfPremul * self.lBreak * (1 - self.nBelow) * (1-self.nAbove) * (1 / ((self.nBelow-2) * (self.nAbove-2)) + pow(self.lBreak / minL, self.nBelow - 2) / ((self.nBelow - 2) * (self.nBelow - self.nAbove)))
+        else:
+            return nptfPremul * self.lBreak * (1 - self.nBelow) * (1 - self.nAbove) * (pow(self.lBreak / minL, self.nAbove - 2) / ((self.nAbove - 2) * (self.nBelow - self.nAbove)))
 
     def getValue(self, l):
         scale = 1
@@ -80,10 +64,10 @@ class LuminosityFunction:
 
     def printEstimate(self):
         global outStr
-        unscaledNumber = self.integrate(minL=L_MIN, maxL=L_MAX)
-        unscaledLum = self.lintegrate(minL=L_MIN, maxL=L_MAX)
-        unscaledNumberAbove = self.integrate(minL=L_THRESH, maxL=L_MAX)
-        unscaledFluxAbove = self.lintegrate(minL=L_THRESH, maxL=L_MAX)
+        unscaledNumber = self.integrate(minL=L_MIN)
+        unscaledLum = self.lintegrate(minL=L_MIN)
+        unscaledNumberAbove = self.integrate(minL=L_THRESH)
+        unscaledFluxAbove = self.lintegrate(minL=L_THRESH)
 
         scale = L_EXCESS / unscaledLum
 

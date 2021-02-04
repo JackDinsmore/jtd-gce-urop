@@ -49,6 +49,8 @@ const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
 #define DISPLAY_SIZE 20.0
 
 double nptfLBreak;
+double nptfPremul = 0;
+double nptfLMin = 0;
 
 enum class VALUE {
 	TOTAL_NUM,
@@ -65,7 +67,7 @@ enum class LUMINOSITY_FUNCTION {
 	ERROR,
 };
 
-LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW;
+LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::NPTF;
 
 std::string sciNot(double value) {
 	int power = log10(value);
@@ -98,7 +100,8 @@ public:
 			}
 		}
 		else {
-			throw "Sensitivity file not found.";
+			std::cout << "Sensitivity file not found." << std::endl;
+			std::cin.get();
 		}
 
 		upperLeft[0] = int((1 - DISPLAY_SIZE / 90.0) * fluxes.size() / 2.0);
@@ -153,7 +156,8 @@ public:
 			}
 		}
 		else {
-			throw "Ploeg data not found.";
+			std::cout << "Ploeg data not found." << std::endl;
+			std::cin.get();
 		}
 
 		normalization = integrate(pow(10, logxs[0]) * ONE_PLUS_EPSILON, false);
@@ -261,6 +265,10 @@ public:
 const SensitivityMap thresholds;
 const PloegData ploegData;
 
+void setNPTFPremul(double n1, double n2) {
+	nptfPremul = (n1 - n2) / (n1 - n2 - (1 - n2) * pow(nptfLMin / nptfLBreak, 1 - n1));
+}
+
 
 // ================= These functions characterize the luminosity function ============
 
@@ -284,13 +292,14 @@ double integrate(double start, double arg1, double arg2) {// arg1, arg2; l0, sig
 		return ploegData.integrate(start);
 	case LUMINOSITY_FUNCTION::NPTF:
 		if (start < nptfLBreak) {
-			return 1 - pow(nptfLBreak / start, arg1 - 1) * (arg2 - 1) / (arg2 - arg1);
+			return nptfPremul * (1 - pow(nptfLBreak / start, arg1 - 1) * (arg2 - 1) / (arg2 - arg1));
 		}
 		else {
-			return pow(nptfLBreak / start, arg2 - 1) * (1 - arg1) / (arg2 - arg1);
+			return nptfPremul * pow(nptfLBreak / start, arg2 - 1) * (1 - arg1) / (arg2 - arg1);
 		}
 	default:
-		throw "Running integrate with an invalid luminosity function.";
+		std::cout << "Running integrate with an invalid luminosity function." << std::endl;
+		std::cin.get();
 	}
 }
 
@@ -307,13 +316,14 @@ double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, si
 		return ploegData.lintegrate(start);
 	case LUMINOSITY_FUNCTION::NPTF:
 		if (start < nptfLBreak) {
-			return nptfLBreak * (1 - arg1) * (1-arg2) * (1 / ((arg1-2) * (arg2-2)) + pow(nptfLBreak / start, arg1 - 2) / ((arg1 - 2) * (arg1 - arg2)));
+			return nptfPremul * nptfLBreak * (1 - arg1) * (1-arg2) * (1 / ((arg1-2) * (arg2-2)) + pow(nptfLBreak / start, arg1 - 2) / ((arg1 - 2) * (arg1 - arg2)));
 		}
 		else {
-			return nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
+			return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
 		}
 	default:
-		throw "Running integrate with an invalid luminosity function.";
+		std::cout << "Running integrate with an invalid luminosity function." << std::endl;
+		std::cin.get();
 	}
 }
 
@@ -353,18 +363,22 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
 
 		lThreshold = fluxThreshold * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
 
+		double val;
 		switch (value) {
 		case VALUE::TOTAL_NUM:
 			integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * CM_PER_KPC_SQUARED;
 			break;
 		case VALUE::SEEN_NUM:
+			val = numSeenFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * numSeenFunc(lThreshold, arg1, arg2) * CM_PER_KPC_SQUARED;
 			break;
 
 		case VALUE::TOTAL_FLUX:
+			val = totalFluxFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * totalFluxFunc(lThreshold, arg1, arg2);
 			break;
 		case VALUE::SEEN_FLUX:
+			val = fluxSeenFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * fluxSeenFunc(lThreshold, arg1, arg2);
 			break;
 		}
@@ -639,7 +653,8 @@ int nptf() {
 	std::cout << "Using the NPTF luminosity function" << std::endl << std::endl;
 
 	nptfLBreak = 1.76e-10 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED);
-
+	setNPTFPremul(-0.66, 18.2);
+	
 	std::future<double> totalFlux = std::async(&getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
 	std::future<double> totalNum = std::async(&getValueAtConfig, VALUE::TOTAL_NUM, -0.66, 18.2);
 	std::future<double> seenFlux = std::async(&getValueAtConfig, VALUE::SEEN_FLUX, -0.66, 18.2);
@@ -657,6 +672,11 @@ int nptf() {
 
 
 	nptfLBreak = 6.8e-9 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED);
+	nptfLMin = 1e29;
+	setNPTFPremul(1.40, 17.5);
+
+	std::cout << integrate(1e31, 1.4, 17.5) << std::endl;
+	std::cout << lintegrate(1e31, 1.4, 17.5) << std::endl;
 
 	totalFlux = std::async(&getValueAtConfig, VALUE::TOTAL_FLUX, 1.40, 17.5);
 	totalNum = std::async(&getValueAtConfig, VALUE::TOTAL_NUM, 1.40, 17.5);
