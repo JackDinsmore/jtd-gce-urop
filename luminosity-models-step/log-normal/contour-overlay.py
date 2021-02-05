@@ -11,7 +11,7 @@ DIM_TRIALS=100
 
 L_EXCESS = 6.756e36  # All units are in ergs per second
 L_THRESH = 1.0e34
-L_0_RANGE=[1.0e32, 2.0e34]
+L_0_RANGE=[1.0e30, 2.0e36]#[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
 powerStep =(L_0_RANGE[1] / L_0_RANGE[0])**(1/DIM_TRIALS)
 

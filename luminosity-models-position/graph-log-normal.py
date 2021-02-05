@@ -9,15 +9,15 @@ from matplotlib.lines import Line2D
 plt.style.use('latex')
 
 
-POWER_STEP = 1.1
-L_0_RANGE=[1.0e32, 2.0e34]
+PLOT_SIZE = 50
+L_0_RANGE=[1.0e30, 2.0e36]#[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
 
-DIM_L0 = int(log(L_0_RANGE[1] / L_0_RANGE[0]) / log(POWER_STEP))
-DIM_SIGMA = 50
+lOPowerStep = (L_0_RANGE[1] / L_0_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
+TOTAL_FLUX = 7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR = (0.8, 0.3, 0.1)
@@ -70,7 +70,7 @@ for line in f.read().split('\n')[:-1]:
     enterLine = []
     for item in line.split(', '):
         if item == '' or item == ' ': continue
-        enterLine.append(float(item))
+        enterLine.append(float(item) / TOTAL_FLUX)
     lumSeen.append(np.asarray(enterLine))
 
 totalNum = np.transpose(np.stack(totalNum, axis=0))
@@ -79,8 +79,8 @@ lumSeen = np.transpose(np.stack(lumSeen, axis=0))
 
 # ========================= Display data =========================
 
-xVals = [L_0_RANGE[0] * POWER_STEP**i for i in range(DIM_L0)]
-yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_SIGMA * j for j in range(DIM_SIGMA)]
+xVals = [L_0_RANGE[0] * lOPowerStep**i for i in range(PLOT_SIZE)]
+yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / PLOT_SIZE * j for j in range(PLOT_SIZE)]
 
 
 fig, ax = plt.subplots(figsize=(7, 5))

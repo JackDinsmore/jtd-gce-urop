@@ -12,8 +12,8 @@ POWER_STEP = 1.1 # 1 is the minimum
 ALPHA_L = 1.94
 L_EXCESS = 6.756e36# 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
-L_MIN_RANGE=[1.0e28, 1.0e34]
-L_MAX_RANGE=[1.0e34, 1.0e36]
+L_MIN_RANGE = [1.0e28, 1.0e34]
+L_MAX_RANGE = [1.0e34, 1.0e38]#[1.0e34, 1.0e36]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0

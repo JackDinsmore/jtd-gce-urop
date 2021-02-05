@@ -14,16 +14,19 @@ from matplotlib.lines import Line2D
 plt.style.use('latex')
 
 
-POWER_STEP = 1.1 # 1 is the minimum
+PLOT_SIZE = 50
 
 ALPHA = 1.94
 L_MIN_RANGE = [1.0e28, 1.0e34]
-L_MAX_RANGE = [1.0e34, 1.0e36]
+L_MAX_RANGE = [1.0e34, 1.0e38]#[1.0e34, 1.0e36]
+minPowerStep = (L_MIN_RANGE[1] / L_MIN_RANGE[0]) ** (1.0 / PLOT_SIZE)
+maxPowerStep = (L_MAX_RANGE[1] / L_MAX_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
 paperPoint = [1e35, 1e29]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=0.2
+TOTAL_FLUX = 7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR = (0.8, 0.3, 0.1)
@@ -86,7 +89,7 @@ for line in f.read().split('\n')[:-1]:
     enterLine = []
     for item in line.split(', '):
         if item == '' or item == ' ': continue
-        enterLine.append(float(item))
+        enterLine.append(float(item) / TOTAL_FLUX)
     lumSeen.append(np.asarray(enterLine))
 
 totalNum = np.stack(totalNum, axis=0)
@@ -98,15 +101,15 @@ lumSeen = np.stack(lumSeen, axis=0)
 dimMin = len(totalNum)
 dimMax = len(totalNum[0])
 
-lMinVals = [L_MIN_RANGE[0] * POWER_STEP**i for i in range(dimMin)]
-lMaxVals = [L_MAX_RANGE[0] * POWER_STEP**j for j in range(dimMax)]
+lMinVals = [L_MIN_RANGE[0] * minPowerStep**i for i in range(PLOT_SIZE)]
+lMaxVals = [L_MAX_RANGE[0] * maxPowerStep**j for j in range(PLOT_SIZE)]
 
 fig, ax = plt.subplots(figsize=(7, 5))
 
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("Lmax")
-plt.ylabel("Lmin")
+plt.xlabel("$L_{max}$")
+plt.ylabel("$L_{min}$")
 plt.title("Exp cutoff (alpha={0})".format(ALPHA))
 
 c1 = plt.pcolor(lMaxVals, lMinVals, totalNum, 

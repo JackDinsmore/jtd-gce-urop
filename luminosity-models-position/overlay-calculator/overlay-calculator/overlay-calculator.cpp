@@ -16,7 +16,8 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define POWER_STEP 1.1 // 1 is the minimum
+#define SENSITIVITY_DIVISOR 2.0
+
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -29,8 +30,8 @@ typedef std::vector<std::vector<double>> DoubleVector;
 
 
 const double L_MIN_RANGE[2] = { 1.0e28, 1.0e34 };
-const double L_MAX_RANGE[2] = { 1.0e34, 1.0e36 };
-const double L0_RANGE[2] = { 1.0e32, 2.0e34 };
+const double L_MAX_RANGE[2] = {1.0e34, 1.0e38}; //{ 1.0e34, 1.0e36 };
+const double L0_RANGE[2] = {1.0e30, 2.0e36}; //{ 1.0e32, 2.0e34 };
 const double SIGMA_RANGE[2] = { 0.001, 1 };
 
 const double fermilabPaperPoint[2] = { 1e35, 1e29 };
@@ -42,11 +43,13 @@ const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
 #define NFW_SCALE_DIST 20 // kpc
 #define INTEGRAL_HALF_WIDTH (DIST_TO_CENTER * 0.9)// / 2 // kpc
 #define NFW_INTEGRAL_STEPS 1000
+#define PLOT_SIZE 50
 
 #define ROOT "C:/Users/goods/Dropbox (MIT)/GCE UROP/"
 #define SENSITIVITY_PATH (ROOT "sensitivity/sensitivity.txt")
 #define PLOEG_PATH (ROOT "luminosity-models-step/ploeg/data/disk.csv")
 #define DISPLAY_SIZE 20.0
+#define myAbs(a) ((a) > 0 ? (a) : -(a))
 
 double nptfLBreak;
 double nptfPremul = 0;
@@ -67,14 +70,14 @@ enum class LUMINOSITY_FUNCTION {
 	ERROR,
 };
 
-LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::NPTF;
+LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW;
 
 std::string sciNot(double value) {
 	int power = log10(value);
 	if (log10(value) < 0 && value != pow(10, power)) {
 		power--;
 	}
-	if (abs(power) > 6) {
+	if (myAbs(power) > 6) {
 		return std::to_string(value / pow(10.0, power)) + "e" + std::to_string(power);
 	}
 	return std::to_string(value);
@@ -91,7 +94,7 @@ public:
 				std::vector<double> v;
 				std::stringstream ss(line);
 				for (double d; ss >> d;) {
-					v.push_back(d);
+					v.push_back(d / SENSITIVITY_DIVISOR);
 					if (ss.peek() == ',') {
 						ss.ignore();
 					}
@@ -363,22 +366,17 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
 
 		lThreshold = fluxThreshold * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
 
-		double val;
 		switch (value) {
 		case VALUE::TOTAL_NUM:
 			integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * CM_PER_KPC_SQUARED;
 			break;
 		case VALUE::SEEN_NUM:
-			val = numSeenFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * numSeenFunc(lThreshold, arg1, arg2) * CM_PER_KPC_SQUARED;
 			break;
-
 		case VALUE::TOTAL_FLUX:
-			val = totalFluxFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * totalFluxFunc(lThreshold, arg1, arg2);
 			break;
 		case VALUE::SEEN_FLUX:
-			val = fluxSeenFunc(lThreshold, arg1, arg2);
 			integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * fluxSeenFunc(lThreshold, arg1, arg2);
 			break;
 		}
@@ -398,7 +396,8 @@ void generateValueSkyMap(VALUE value, DoubleVector* skyMap, double arg1, double 
 		//std::cout << x << '/' << skyMap->size() << std::endl;
 		for (int y = 0; y < (*skyMap)[x].size(); y++) {
 			CoordPair latLon = thresholds.indexToLatLon({ x, y });
-			if (abs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
+			if (myAbs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
+				//std::cout << "Evaluating latLon " << latLon.first << " " << latLon.second << std::endl;
 				double val = getValueAtLatLon(latLon, thresholds.getFluxThreshold(latLon), value, arg1, arg2);
 				(*skyMap)[x][y] = val;
 			}
@@ -424,33 +423,33 @@ double getValueAtConfig(VALUE value, double arg1, double arg2) {
 
 void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
 	//Return the(unscaled) plot map
-	const IndexPair plotShape = { int(log(L_MIN_RANGE[1] / L_MIN_RANGE[0]) / log(POWER_STEP)),
-		int(log(L_MAX_RANGE[1] / L_MAX_RANGE[0]) / log(POWER_STEP)) };
+	CoordPair powerSteps = { pow(L_MIN_RANGE[1] / L_MIN_RANGE[0], 1.0 / PLOT_SIZE),
+				pow(L_MAX_RANGE[1] / L_MAX_RANGE[0], 1.0 / PLOT_SIZE) };
 
-	*plotMap = DoubleVector(plotShape.first, std::vector<double>(plotShape.second, 0));
+	*plotMap = DoubleVector(PLOT_SIZE, std::vector<double>(PLOT_SIZE, 0));
 
 #ifndef LOTS_OF_THREADS
-	for (int i = 0; i < plotShape.first; i++) {
-		double lMin = L_MIN_RANGE[0] * pow(POWER_STEP, i);
-		//std::cout << i << " / " << plotShape.first << std::endl;
-		for (int j = 0; j < plotShape.second; j++) {
-			double lMax = L_MAX_RANGE[0] * pow(POWER_STEP, j);
+	for (int i = 0; i < PLOT_SIZE; i++) {
+		double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
+		std::cout << lMin << std::endl;
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
 			(*plotMap)[i][j] = getValueAtConfig(value, lMin, lMax);
 		}
 	}
 
 #else 
-	for (int i = 0; i < plotShape.first; i++) {
-		double lMin = L_MIN_RANGE[0] * pow(POWER_STEP, i);
-		std::vector<std::future<double>*> futures(plotShape.second, nullptr);
-		for (int j = 0; j < plotShape.second; j++) {
-			double lMax = L_MAX_RANGE[0] * pow(POWER_STEP, j);
-			futures[j] = new std::future<double>(std::move(std::async(&getValueAtConfig, value, lMin, lMax)));
+	for (int i = 0; i < PLOT_SIZE; i++) {
+		double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
+		std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
+			//futures[j] = new std::future<double>(std::move(std::async(std::launch::async, &getValueAtConfig, value, lMin, lMax)));
 		}
-		std::cout << plotShape.second << " threads made for value " << (int)value << "." << std::endl;
-		for (int j = 0; j < plotShape.second; j++) {
-			(*plotMap)[i][j] = futures[j]->get();
-			delete futures[j];
+		std::cout << PLOT_SIZE << " threads made for value " << (int)value << "." << std::endl;
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			(*plotMap)[i][j] = 1; //futures[j]->get();
+			//delete futures[j];
 		}
 	}
 	std::cout << "Value " << (int)value << " completed." << std::endl;
@@ -459,32 +458,32 @@ void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
 
 void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
 	//Return the(unscaled) plot map
-	const IndexPair plotShape = { int(log(L0_RANGE[1] / L0_RANGE[0]) / log(POWER_STEP)),
-		50 };
-	*plotMap = DoubleVector(plotShape.first, std::vector<double>(plotShape.second, 0));
+	const CoordPair powerSteps = { pow(L0_RANGE[1] / L0_RANGE[0], 1.0 / PLOT_SIZE),
+					(SIGMA_RANGE[1] - SIGMA_RANGE[0]) / PLOT_SIZE };
+	*plotMap = DoubleVector(PLOT_SIZE, std::vector<double>(PLOT_SIZE, 0));
 
 #ifndef LOTS_OF_THREADS
-	for (int i = 0; i < plotShape.first; i++) {
-		double l0 = L0_RANGE[0] * pow(POWER_STEP, i);
+	for (int i = 0; i < PLOT_SIZE; i++) {
+		double l0 = L0_RANGE[0] * pow(powerSteps.first, i);
 		//std::cout << i << " / " << plotShape.first << std::endl;
-		for (int j = 0; j < plotShape.second; j++) {
-			double sigma = SIGMA_RANGE[0] + (SIGMA_RANGE[1] - SIGMA_RANGE[0]) * (j / float(plotShape.second));
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			double sigma = SIGMA_RANGE[0] + j * powerSteps.second;
 			(*plotMap)[i][j] = getValueAtConfig(value, l0, sigma);
 		}
 	}
 
 #else 
-	for (int i = 0; i < plotShape.first; i++) {
-		double l0 = L0_RANGE[0] * pow(POWER_STEP, i);
-		std::vector<std::future<double>*> futures(plotShape.second, nullptr);
-		for (int j = 0; j < plotShape.second; j++) {
-			double sigma = SIGMA_RANGE[0] + (SIGMA_RANGE[1] - SIGMA_RANGE[0]) * (j / float(plotShape.second));
-			futures[j] = new std::future<double>(std::move(std::async(&getValueAtConfig, value, l0, sigma)));
+	for (int i = 0; i < PLOT_SIZE; i++) {
+		double l0 = L0_RANGE[0] * pow(powerSteps.first, i);
+		std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			double sigma = SIGMA_RANGE[0] + powerSteps.second * j;
+			//futures[j] = new std::future<double>(std::move(std::async(std::launch::async, &getValueAtConfig, value, l0, sigma)));
 		}
-		std::cout << plotShape.second << " threads made for value " << (int)value << "." << std::endl;
-		for (int j = 0; j < plotShape.second; j++) {
-			(*plotMap)[i][j] = futures[j]->get();
-			delete futures[j];
+		std::cout << PLOT_SIZE << " threads made for value " << (int)value << "at l0 " << l0 <<"." << std::endl;
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			(*plotMap)[i][j] = 1;//futures[j]->get();
+			//delete futures[j];
 		}
 	}
 	std::cout << "Value " << (int)value << " completed." << std::endl;
@@ -518,8 +517,8 @@ int powerLaw() {
 	lumSeenThread.join();
 	totalLumThread.join();
 #else
-	// Do two at a time, because 48 * 2 = 98, and Erebus uses 80 threads at a time./
-	// Of course, the number of threads is weakly less than 98.
+	// Do two at a time, because 50 * 2 = 100, and Erebus uses 80 threads at a time./
+	// Of course, the number of threads is weakly less than 100.
 	std::thread totalNumThread(generatePowerLawPlotMap, VALUE::TOTAL_NUM, &totalNum);
 	std::thread numSeenThread(generatePowerLawPlotMap, VALUE::SEEN_NUM, &numSeen);
 	totalNumThread.join();
@@ -625,10 +624,10 @@ int logNormal() {
 int ploeg() {
 	std::cout << "Using Ploeg et al.'s luminosity function" << std::endl << std::endl;
 
-	std::future<double> totalFlux = std::async(&getValueAtConfig, VALUE::TOTAL_FLUX, 0, 0);
-	std::future<double> totalNum = std::async(&getValueAtConfig, VALUE::TOTAL_NUM, 0, 0);
-	std::future<double> seenFlux = std::async(&getValueAtConfig, VALUE::SEEN_FLUX, 0, 0);
-	std::future<double> seenNum = std::async(&getValueAtConfig, VALUE::SEEN_NUM, 0, 0);
+	std::future<double> totalFlux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, 0, 0);
+	std::future<double> totalNum = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_NUM, 0, 0);
+	std::future<double> seenFlux = std::async(std::launch::async, &getValueAtConfig, VALUE::SEEN_FLUX, 0, 0);
+	std::future<double> seenNum = std::async(std::launch::async, &getValueAtConfig, VALUE::SEEN_NUM, 0, 0);
 
 	double ploegScale = FLUX_EXCESS / totalFlux.get();
 	double totalNumScaled = totalNum.get() * ploegScale;
@@ -654,11 +653,11 @@ int nptf() {
 
 	nptfLBreak = 1.76e-10 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED);
 	setNPTFPremul(-0.66, 18.2);
-	
-	std::future<double> totalFlux = std::async(&getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
-	std::future<double> totalNum = std::async(&getValueAtConfig, VALUE::TOTAL_NUM, -0.66, 18.2);
-	std::future<double> seenFlux = std::async(&getValueAtConfig, VALUE::SEEN_FLUX, -0.66, 18.2);
-	std::future<double> seenNum = std::async(&getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);
+
+	std::future<double> totalFlux = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
+	std::future<double> totalNum = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_NUM, -0.66, 18.2);
+	std::future<double> seenFlux = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_FLUX, -0.66, 18.2);
+	std::future<double> seenNum = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);	
 
 	double nptfScale = FLUX_EXCESS / totalFlux.get();
 	double totalNumScaled = totalNum.get() * nptfScale;
@@ -675,13 +674,10 @@ int nptf() {
 	nptfLMin = 1e29;
 	setNPTFPremul(1.40, 17.5);
 
-	std::cout << integrate(1e31, 1.4, 17.5) << std::endl;
-	std::cout << lintegrate(1e31, 1.4, 17.5) << std::endl;
-
-	totalFlux = std::async(&getValueAtConfig, VALUE::TOTAL_FLUX, 1.40, 17.5);
-	totalNum = std::async(&getValueAtConfig, VALUE::TOTAL_NUM, 1.40, 17.5);
-	seenFlux = std::async(&getValueAtConfig, VALUE::SEEN_FLUX, 1.40, 17.5);
-	seenNum = std::async(&getValueAtConfig, VALUE::SEEN_NUM, 1.40, 17.5);
+	totalFlux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, 1.40, 17.5);
+	totalNum = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_NUM, 1.40, 17.5);
+	seenFlux = std::async(std::launch::async, &getValueAtConfig, VALUE::SEEN_FLUX, 1.40, 17.5);
+	seenNum = std::async(std::launch::async, &getValueAtConfig, VALUE::SEEN_NUM, 1.40, 17.5);
 
 	nptfScale = FLUX_EXCESS / totalFlux.get();
 	totalNumScaled = totalNum.get() * nptfScale;
