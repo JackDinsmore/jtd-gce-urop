@@ -163,14 +163,14 @@ xVals = [L_0_RANGE[0] * powerStep**i for i in range(DIM_TRIALS)]
 yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / DIM_TRIALS * j for j in range(DIM_TRIALS)]
 
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 plt.xlim(left=L_0_RANGE[0], right=L_0_RANGE[1])
 plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
 plt.xlabel("$L_0$")
-plt.title("Log normal luminosity functions")
+plt.title("Log normal, step function")
 
 c1 = plt.pcolor(xVals, yVals, numPulsars, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),

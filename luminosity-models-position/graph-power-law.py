@@ -22,6 +22,8 @@ L_MAX_RANGE = [1.0e34, 1.0e38]#[1.0e34, 1.0e36]
 minPowerStep = (L_MIN_RANGE[1] / L_MIN_RANGE[0]) ** (1.0 / PLOT_SIZE)
 maxPowerStep = (L_MAX_RANGE[1] / L_MAX_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
+MULTIPLIER = 5
+
 paperPoint = [1e35, 1e29]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
@@ -30,7 +32,7 @@ TOTAL_FLUX = 7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR = (0.8, 0.3, 0.1)
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/power-law/"
+PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-"+ str(MULTIPLIER) + "x/power-law/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -104,13 +106,13 @@ dimMax = len(totalNum[0])
 lMinVals = [L_MIN_RANGE[0] * minPowerStep**i for i in range(PLOT_SIZE)]
 lMaxVals = [L_MAX_RANGE[0] * maxPowerStep**j for j in range(PLOT_SIZE)]
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 
 plt.xscale("log")
 plt.yscale("log")
 plt.xlabel("$L_{max}$")
 plt.ylabel("$L_{min}$")
-plt.title("Exp cutoff (alpha={0})".format(ALPHA))
+plt.title("Power-law, position-dependent{}".format("" if MULTIPLIER is None else (", sensitivity x"+str(MULTIPLIER))))
 
 c1 = plt.pcolor(lMaxVals, lMinVals, totalNum, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
@@ -150,6 +152,7 @@ plt.tight_layout()
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig(PATH_TO_FILE + "overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE + "overlay.png")
+    plt.savefig(PATH_TO_FILE + "power-law-pos-x" + str(MULTIPLIER) + ".png")
+    plt.savefig("C:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law/power-law-pos-x" + str(MULTIPLIER) + ".png")
 
 plt.show()

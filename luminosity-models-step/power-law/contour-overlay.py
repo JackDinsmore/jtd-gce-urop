@@ -133,7 +133,7 @@ lMaxVals = [L_MAX_RANGE[0] * POWER_STEP**j for j in range(dimMax)]
 getGreenYIntercept()
 
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 '''plt.text(0.95, 0.95, 'Greens: number limit\nReds: luminosity limit\nBold: Fermilab observations', 
     horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color='white', backgroundcolor=(0, 0, 0, 0.3))'''
 
@@ -141,7 +141,7 @@ plt.xscale("log")
 plt.yscale("log")
 plt.xlabel("$L_{max}$")
 plt.ylabel("$L_{min}$")
-plt.title("Power law luminosity functions ($\\alpha$={0})".format(ALPHA_L))
+plt.title("Power law, step function")
 
 c1 = plt.pcolor(lMaxVals, lMinVals, numPulsars, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),

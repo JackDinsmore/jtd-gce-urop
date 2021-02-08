@@ -16,7 +16,7 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define SENSITIVITY_DIVISOR 2.0
+#define SENSITIVITY_DIVISOR 5.0
 
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001

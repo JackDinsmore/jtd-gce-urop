@@ -1,0 +1,4 @@
+Paper values: (lMin = 1.000000e29 ergs/s, lMax = 1.000000e35 ergs/s)
+	Total number of pulsars: 3420055.729636
+	Number of visible pulsars: 26.490381
+	Fraction of seen luminosity: 0.156733

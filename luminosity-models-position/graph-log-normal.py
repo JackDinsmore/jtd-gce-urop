@@ -13,6 +13,8 @@ PLOT_SIZE = 50
 L_0_RANGE=[1.0e30, 2.0e36]#[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
 
+MULTIPLIER = 5
+
 lOPowerStep = (L_0_RANGE[1] / L_0_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
@@ -26,7 +28,7 @@ DRAW_PLOEG_POINT = True
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/log-normal/"
+PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-"+str(MULTIPLIER)+"x/log-normal/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -83,21 +85,23 @@ xVals = [L_0_RANGE[0] * lOPowerStep**i for i in range(PLOT_SIZE)]
 yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / PLOT_SIZE * j for j in range(PLOT_SIZE)]
 
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 plt.xlim(left=L_0_RANGE[0], right=L_0_RANGE[1])
 plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
 plt.xlabel("$L_0$")
-plt.title("Log normal luminosity function")
+plt.title("Log-normal, position-dependent{}".format("" if (MULTIPLIER is None) else (", sensitivity x"+str(MULTIPLIER))))
 
 cols = colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                    vmax=max([max(v) for v in totalNum]))
 c1 = plt.pcolor(xVals, yVals, totalNum, 
                    norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                    vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
-plt.colorbar(c1, extend='max')
+cbar = plt.colorbar(c1, extend='max')
+cbar.set_label("$N$")
+
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
@@ -136,6 +140,7 @@ plt.tight_layout()
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig(PATH_TO_FILE+"overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE+"overlay.png")
+    plt.savefig(PATH_TO_FILE+"log-normal-step-x" + str(MULTIPLIER) + ".png")
+    plt.savefig("C:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-pos-x" + str(MULTIPLIER) + ".png")
 
 plt.show()
