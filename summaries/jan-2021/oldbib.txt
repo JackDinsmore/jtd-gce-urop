@@ -1,0 +1,18 @@
+
+\begin{thebibliography}{99}
+    \bibitem{fermilab} Y. Zhong, S. McDermott, I. Cholis, P. Fox. ``A New Mask for An Old Suspect: Testing the Sensitivity of the Galactic Center Excess to the Point Source Mask.'' arXiv:1911.12369v (2019).
+
+    \bibitem{log-normal} D. Hooper and T. Linden. ``The Gamma-Ray Pulsar Population of
+    Globular Clusters: Implications for the GeV Excess.'' \textit{JCAP} (2016).
+
+    \bibitem{ploeg} H. Ploeg, C. Gordon, R. Crocker, O. Macias. ``Comparing the Galactic Bulge and Galactic Disk Millisecond Pulsars.'' arXiv:2008.10821v2 (2020).
+
+    \bibitem{nptf} Samuel K. Lee, Mariangela Lisanti, Benjamin R. Safdi, Tracy R. Slatyer, and Wei Xue ``Evidence for Unresolved Gamma-Ray Point Sources in the Inner Galaxy.'' arXiv:1506.05124v3 (2016).
+
+    \bibitem{gce-spectrum} Francesca Calore, Ilias Cholis, and Christoph Weniger. ``Background model statistics for the Fermi GeV Excess.'' arXiv:1409.0042v1 (2014).
+
+    \bibitem{4fgl1} J. Ballet, T. H. Burnett, S. W. Digel, B. Lott ``Fermi Large Area Telescope Fourth Source Catalog Data Release 2.'' arXiv:2005.11208v5 (2020).
+
+    \bibitem{4fgl2} S. Abdollahi et al. ``\textit{Fermi} Large Area Telescope Fourth Source Catalog'' \textit{ApJS} (2020).
+
+\end{thebibliography}

@@ -16,21 +16,22 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define SENSITIVITY_DIVISOR 5.0
+#define SENSITIVITY_DIVISOR 1.0
 
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
 #define ALPHA 1.94
+#define L_MIN 1.0e29
 #define DIST_TO_CENTER 8.5 // kpc
 #define CM_PER_KPC_SQUARED 9.523396e+42
 #define FLUX_EXCESS 7.494712733226778e-10  // All flux units are in ergs per second per square centimeter
-#define ERGS_PER_PHOTON 0.00545625167499331 // Use the ergs per photon for the NPTF paper
 
 
 const double L_MIN_RANGE[2] = { 1.0e28, 1.0e34 };
 const double L_MAX_RANGE[2] = {1.0e34, 1.0e38}; //{ 1.0e34, 1.0e36 };
+const double ALPHA_RANGE[2] = { 1.1, 2.5 };
 const double L0_RANGE[2] = {1.0e30, 2.0e36}; //{ 1.0e32, 2.0e34 };
 const double SIGMA_RANGE[2] = { 0.001, 1 };
 
@@ -44,6 +45,7 @@ const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
 #define INTEGRAL_HALF_WIDTH (DIST_TO_CENTER * 0.9)// / 2 // kpc
 #define NFW_INTEGRAL_STEPS 1000
 #define PLOT_SIZE 50
+#define FERMILAB_ALPHA 1.94
 
 #define ROOT "C:/Users/goods/Dropbox (MIT)/GCE UROP/"
 #define SENSITIVITY_PATH (ROOT "sensitivity/sensitivity.txt")
@@ -67,10 +69,11 @@ enum class LUMINOSITY_FUNCTION {
 	LOG_NORMAL,
 	PLOEG,
 	NPTF,
+	POWER_LAW_ALPHA,
 	ERROR,
 };
 
-LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW;
+LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW_ALPHA;
 
 std::string sciNot(double value) {
 	int power = log10(value);
@@ -300,6 +303,8 @@ double integrate(double start, double arg1, double arg2) {// arg1, arg2; l0, sig
 		else {
 			return nptfPremul * pow(nptfLBreak / start, arg2 - 1) * (1 - arg1) / (arg2 - arg1);
 		}
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		return improvedGamma(1 - arg1, start / arg2) / improvedGamma(1 - arg1, L_MIN / arg2);
 	default:
 		std::cout << "Running integrate with an invalid luminosity function." << std::endl;
 		std::cin.get();
@@ -324,6 +329,9 @@ double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, si
 		else {
 			return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
 		}
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		if (start == NULL) { start = L_MIN; }
+		return arg2 * improvedGamma(2 - arg1, start / arg2) / improvedGamma(1 - arg1, L_MIN / arg2);
 	default:
 		std::cout << "Running integrate with an invalid luminosity function." << std::endl;
 		std::cin.get();
@@ -456,6 +464,29 @@ void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
 #endif
 }
 
+void generatePowerLawAlphaPlotMap(VALUE value, DoubleVector* plotMap) {
+	//Return the(unscaled) plot map
+	CoordPair powerSteps = { (ALPHA_RANGE[1] - ALPHA_RANGE[0]) / PLOT_SIZE,
+				pow(L_MAX_RANGE[1] / L_MAX_RANGE[0], 1.0 / PLOT_SIZE) };
+
+	*plotMap = DoubleVector(PLOT_SIZE, std::vector<double>(PLOT_SIZE, 0));
+
+#ifndef LOTS_OF_THREADS
+	for (int i = 0; i < PLOT_SIZE; i++) {
+		double alpha = i * powerSteps.first + ALPHA_RANGE[0];
+		std::cout << alpha << std::endl;
+		for (int j = 0; j < PLOT_SIZE; j++) {
+			double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
+			(*plotMap)[i][j] = getValueAtConfig(value, alpha, lMax);
+		}
+	}
+
+#else 
+	std::cout << "Unimplemented" << std::endk;
+	throw "Unimplemented";
+#endif
+}
+
 void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
 	//Return the(unscaled) plot map
 	const CoordPair powerSteps = { pow(L0_RANGE[1] / L0_RANGE[0], 1.0 / PLOT_SIZE),
@@ -548,6 +579,67 @@ int powerLaw() {
 
 	std::cout << "Done." << std::endl;
 	system("python \"" ROOT "luminosity-models-position/graph-power-law.py\"");
+	std::cin.get();
+	return 1;
+}
+
+int powerLawAlpha() {
+	std::cout << "Using a power law alpha luminosity function" << std::endl << std::endl;
+	double paperScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]);
+	std::string writeText = "Paper values: (alpha = " + std::to_string((int)FERMILAB_ALPHA) + ", lMax = " + sciNot(fermilabPaperPoint[0]) + " ergs/s)\n" +
+		"\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale) +
+		"\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale) +
+		"\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale / FLUX_EXCESS) + "\n";
+
+	std::cout << writeText << std::endl;
+	std::ofstream recordFile;
+	recordFile.open(ROOT "luminosity-models-position/data/power-law-alpha/record.txt");
+	recordFile << writeText;
+
+	// Generate unscaled data
+	DoubleVector totalNum, numSeen, fluxSeen, totalFlux;
+
+#ifndef LOTS_OF_THREADS
+	std::thread totalNumThread(generatePowerLawAlphaPlotMap, VALUE::TOTAL_NUM, &totalNum);
+	std::thread numSeenThread(generatePowerLawAlphaPlotMap, VALUE::SEEN_NUM, &numSeen);
+	std::thread lumSeenThread(generatePowerLawAlphaPlotMap, VALUE::SEEN_FLUX, &fluxSeen);
+	std::thread totalLumThread(generatePowerLawAlphaPlotMap, VALUE::TOTAL_FLUX, &totalFlux);
+	totalNumThread.join();
+	numSeenThread.join();
+	lumSeenThread.join();
+	totalLumThread.join();
+#else
+	// Do two at a time, because 50 * 2 = 100, and Erebus uses 80 threads at a time./
+	// Of course, the number of threads is weakly less than 100.
+	std::thread totalNumThread(generatePowerLawPlotMap, VALUE::TOTAL_NUM, &totalNum);
+	std::thread numSeenThread(generatePowerLawPlotMap, VALUE::SEEN_NUM, &numSeen);
+	totalNumThread.join();
+	numSeenThread.join();
+	std::thread lumSeenThread(generatePowerLawPlotMap, VALUE::SEEN_FLUX, &fluxSeen);
+	std::thread totalLumThread(generatePowerLawPlotMap, VALUE::TOTAL_FLUX, &totalFlux);
+	lumSeenThread.join();
+	totalLumThread.join();
+#endif
+
+	// Write data to an output file
+	std::ofstream totalNumFile, numSeenFile, lumSeenFile;
+	totalNumFile.open(ROOT "luminosity-models-position/data/power-law-alpha/total-num.txt");
+	numSeenFile.open(ROOT "luminosity-models-position/data/power-law-alpha/num-seen.txt");
+	lumSeenFile.open(ROOT "luminosity-models-position/data/power-law-alpha/lum-seen.txt");
+	for (int x = 0; x < totalNum.size(); x++) {
+		for (int y = 0; y < totalNum[x].size(); y++) {
+			double scale = FLUX_EXCESS / totalFlux[x][y];
+			totalNumFile << totalNum[x][y] * scale << (y == totalNum[x].size() - 1 ? "" : ", ");
+			numSeenFile << numSeen[x][y] * scale << (y == totalNum[x].size() - 1 ? "" : ", ");
+			lumSeenFile << fluxSeen[x][y] * scale << (y == totalNum[x].size() - 1 ? "" : ", ");
+		}
+		totalNumFile << std::endl;
+		numSeenFile << std::endl;
+		lumSeenFile << std::endl;
+	}
+
+	std::cout << "Done." << std::endl;
+	system("python \"" ROOT "luminosity-models-position/graph-power-law-alpha.py\"");
 	std::cin.get();
 	return 1;
 }
@@ -651,7 +743,7 @@ int ploeg() {
 int nptf() {
 	std::cout << "Using the NPTF luminosity function" << std::endl << std::endl;
 
-	nptfLBreak = 1.76e-10 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED);
+	nptfLBreak = 8.656487610122969e+33;
 	setNPTFPremul(-0.66, 18.2);
 
 	std::future<double> totalFlux = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
@@ -670,7 +762,7 @@ int nptf() {
 		+ "\n\tFraction of seen luminosity: " + sciNot(fracFluxScaled) + "\n\n";
 
 
-	nptfLBreak = 6.8e-9 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED);
+	nptfLBreak = 3.344552031183874e+35;
 	nptfLMin = 1e29;
 	setNPTFPremul(1.40, 17.5);
 
@@ -711,6 +803,9 @@ int main(int argc, char** argv) {
 		else if (strcmp(argv[1], "nptf") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::NPTF;
 		}
+		else if (strcmp(argv[1], "alpha") == 0) {
+			luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW_ALPHA;
+		}
 		else {
 			luminosityFunction = LUMINOSITY_FUNCTION::ERROR;
 		}
@@ -724,8 +819,10 @@ int main(int argc, char** argv) {
 		return ploeg();
 	case LUMINOSITY_FUNCTION::NPTF:
 		return nptf();
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		return powerLawAlpha();
 	case LUMINOSITY_FUNCTION::ERROR:
-		std::cout << "The argument \"" + std::string(argv[0]) + "\" is not supported. Options are \"powerlaw\", \"lognormal\", \"ploeg\", and \"nptf\"." << std::endl;
+		std::cout << "The argument \"" + std::string(argv[0]) + "\" is not supported. Options are \"powerlaw\", \"lognormal\", \"ploeg\", \"alpha\" and \"nptf\"." << std::endl;
 		return 0;
 	}
 }

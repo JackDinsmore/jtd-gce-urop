@@ -18,7 +18,6 @@ L_EXCESS = 6.756e36 # 3.3440751340173124e+36  # 1.893 to 11.943 GeV
 DIST_FROM_GALACTIC_CENTER_KILOPARSEC = 8.5
 CM_PER_KILOPARSEC = 3.086e21
 L_THRESH = 1.0e34
-ERGS_PER_PHOTON = 0.00545625167499331 # Keep the original flux, because this makes sense to me.
 PI = 3.1415926535
 
 L_MIN = None
@@ -30,11 +29,11 @@ global outStr
 outStr = ""
 
 class LuminosityFunction:
-    def __init__(self, name, nBelow, nAbove, fluxBreak):
+    def __init__(self, name, nBelow, nAbove, lBreak):
         self.name = name
         self.nBelow = nBelow
         self.nAbove = nAbove
-        self.lBreak = fluxBreak * ERGS_PER_PHOTON * (4 * PI * (DIST_FROM_GALACTIC_CENTER_KILOPARSEC * CM_PER_KILOPARSEC)**2)
+        self.lBreak = lBreak
     
     def integrate(self, minL):
         if minL is None: minL = CUTOFF_MINIMUM
@@ -91,8 +90,8 @@ class LuminosityFunction:
         y=[self.getValue(l) for l in x]
         plt.plot(x, y, label=self.name)
 
-lumFuncs = [LuminosityFunction("NFW PS", -0.66, 18.2, 1.76e-10),
-            LuminosityFunction("Disk PS", 1.40, 17.5, 6.8e-9)
+lumFuncs = [LuminosityFunction("NFW PS", -0.66, 18.2, 8.656487610122969e+33),
+            LuminosityFunction("Disk PS", 1.40, 17.5, 3.344552031183874e+35)
             ]
 
 for l in lumFuncs:

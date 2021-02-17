@@ -23,12 +23,9 @@ excludeMask = np.ones(data.shape[0], dtype=bool)
 # Functions to filter point sources I don't want to include in my analysis
 def excludeLatLong(excludeMask):
     thisMask = np.ones(data.shape[0], dtype=bool)
-    thisMask = thisMask & ((data["GLON"] < 10) | (data["GLON"] > 350))
-    thisMask = thisMask & (-10 < data["GLAT"]) & (data["GLAT"] < 10)
-    return excludeMask & thisMask
-
-def excludeDistance(excludeMask):
-    thisMask = np.ones(data.shape[0], dtype=bool)
+    thisMask = thisMask & ((data["GLON"] < 20) | (data["GLON"] > 340))
+    thisMask = thisMask & (((-20 < data["GLAT"]) & (data["GLAT"] < -2))
+        | ((2 < data["GLAT"]) & (data["GLAT"] < 20)))
     return excludeMask & thisMask
 
 def convertFluxToLuminosity(flux):
@@ -37,7 +34,6 @@ def convertFluxToLuminosity(flux):
 
 # Apply filters
 excludeMask = excludeLatLong(excludeMask)
-excludeMask = excludeDistance(excludeMask)
 
 print(data.shape)
 data = data[excludeMask]

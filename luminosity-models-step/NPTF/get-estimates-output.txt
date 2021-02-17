@@ -1,10 +1,10 @@
 NFW PS luminosity function:
-    Total number of pulsars:		1228.0134778163533
-    Total luminosity:			6.756e+36
-    Number of pulsars above threshold:	4.413787478054648	(Fermi: 47)
-    Fraction of lum above threshold:	0.006936417251655592	(Fermi: 0.2)
+    Total number of pulsars:		1177.8989722163737
+    Total luminosity:			6.756000000000001e+36
+    Number of pulsars above threshold:	8.668658361046708	(Fermi: 47)
+    Fraction of lum above threshold:	0.013623091665205084	(Fermi: 0.2)
 Disk PS luminosity function:
-    Total number of pulsars:		12148.804666653985
+    Total number of pulsars:		11849.301260021939
     Total luminosity:			6.756e+36
-    Number of pulsars above threshold:	92.10660033819426	(Fermi: 47)
-    Fraction of lum above threshold:	0.8799456837144937	(Fermi: 0.2)
+    Number of pulsars above threshold:	90.31068939351158	(Fermi: 47)
+    Fraction of lum above threshold:	0.8829100998134313	(Fermi: 0.2)

@@ -249,42 +249,81 @@ INPUT c:/texlive/2019/texmf-dist/tex/latex/caption/caption3.sty
 INPUT c:/texlive/2019/texmf-dist/tex/latex/caption/caption3.sty
 INPUT c:/texlive/2019/texmf-dist/tex/latex/caption/subcaption.sty
 INPUT c:/texlive/2019/texmf-dist/tex/latex/caption/subcaption.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/esint/esint.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/esint/esint.sty
 INPUT c:/texlive/2019/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex
 INPUT c:/texlive/2019/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex
 INPUT c:/texlive/2019/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel/babel.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel/babel.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel/switch.def
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel-english/english.ldf
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel-english/english.ldf
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel/babel.def
+INPUT c:/texlive/2019/texmf-dist/tex/generic/babel/txtbabel.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/grfext.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/grfext.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT c:/texlive/2019/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/logreq/logreq.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/logreq/logreq.sty
+INPUT c:/texlive/2019/texmf-dist/tex/latex/logreq/logreq.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/logreq/logreq.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/blx-dm.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/blx-dm.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/blx-compat.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/blx-compat.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.def
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/bbx/numeric.bbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/bbx/numeric.bbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/cbx/numeric.cbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/cbx/numeric.cbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.cfg
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/biblatex.cfg
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/lbx/english.lbx
+INPUT c:/texlive/2019/texmf-dist/tex/latex/biblatex/lbx/english.lbx
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.aux
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.aux
 OUTPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.aux
 INPUT c:/texlive/2019/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT c:/texlive/2019/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/infwarerr.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/infwarerr.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/grfext.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/grfext.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/etexcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/etexcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ifluatex.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/ifluatex.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
-INPUT c:/texlive/2019/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
-INPUT c:/texlive/2019/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT c:/texlive/2019/texmf-dist/tex/latex/base/ts1enc.dfu
 INPUT c:/texlive/2019/texmf-dist/tex/latex/base/ts1enc.dfu
 INPUT c:/texlive/2019/texmf-dist/tex/latex/translator/translator-basic-dictionary-English.dict
 INPUT c:/texlive/2019/texmf-dist/tex/latex/translator/translator-basic-dictionary-English.dict
 INPUT c:/texlive/2019/texmf-dist/tex/latex/siunitx/siunitx-abbreviations.cfg
 INPUT c:/texlive/2019/texmf-dist/tex/latex/siunitx/siunitx-abbreviations.cfg
+OUTPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.bcf
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.bbl
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.bbl
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.bbl
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT c:/texlive/2019/texmf-dist/tex/latex/base/ulasy.fd
@@ -307,6 +346,11 @@ INPUT c:/texlive/2019/texmf-dist/tex/latex/wasysym/uwasy.fd
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy7.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy5.tfm
+INPUT c:/texlive/2019/texmf-dist/tex/latex/esint/uesint.fd
+INPUT c:/texlive/2019/texmf-dist/tex/latex/esint/uesint.fd
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmss10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmss8.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmss8.tfm
@@ -344,14 +388,24 @@ INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy8.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy6.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmr9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmti9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmti10.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 OUTPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.pdf
 INPUT c:/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed-times-l.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed-times-l.png
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/superimposed-times-l.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-histo.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-histo.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/flux-histo.png
@@ -376,6 +430,7 @@ INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/latex-fonts/lasy9.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/wasy/wasy9.tfm
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/esint/esint10.tfm
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-step.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-step.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-step.png
@@ -404,9 +459,14 @@ INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/l
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-pos-x10.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-pos-x10.png
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-pos-x10.png
+INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm
 INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.aux
+INPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.run.xml
+OUTPUT c:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/jan-2021.run.xml
+INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb
+INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
@@ -421,9 +481,9 @@ INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
-INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb
 INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb
+INPUT c:/texlive/2019/texmf-dist/fonts/type1/public/esint-type1/esint10.pfb
