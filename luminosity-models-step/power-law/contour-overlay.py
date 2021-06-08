@@ -10,7 +10,7 @@ plt.style.use('latex')
 POWER_STEP = 1.1 # 1 is the minimum
 
 ALPHA_L = 1.94
-L_EXCESS = 6.756e36# 6.37e36  # All units are in ergs per second
+L_EXCESS = 1.2953417255755896e-09 / 8.331593765023139e-47#6.756e36# 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN_RANGE = [1.0e28, 1.0e34]
 L_MAX_RANGE = [1.0e34, 1.0e38]#[1.0e34, 1.0e36]
@@ -176,10 +176,12 @@ plt.xlim(lMaxVals[0], lMaxVals[-1])
 plt.ylim(lMinVals[0], lMinVals[-1])
 plt.tight_layout()
 
+print([np.percentile(numPulsars, i) for i in range(0, 100, 10)])
+
 
 if(DRAW_EXTRA_CONTOURS):
-    plt.savefig("contour-overlay-extra.png")
+    plt.savefig("overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig("contour-overlay.png")
+    plt.savefig("overlay.png")
 
 plt.show()

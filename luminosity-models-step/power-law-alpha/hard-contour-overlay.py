@@ -9,7 +9,7 @@ plt.style.use('latex')
 
 POWER_STEP = 1.1 # 1 is the minimum
 
-L_EXCESS = 6.756e36# 6.37e36  # All units are in ergs per second
+L_EXCESS = 9.7787012e+36#6.756e36# 6.37e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN = 1e29
 ALPHA_RANGE = [1.1, 2.5]

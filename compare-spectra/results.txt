@@ -1,0 +1,15 @@
+Flux of the GCE:
+	Calore: 1.87754364e-09 erg / cm^2 / s
+	Fermilab: 1.08479213e-09 erg / cm^2 / s
+	As extracted from Fermilab estimates: 7.4947127e-10  erg / cm^2 / s
+Flux to luminosity ratio:
+	naive: 1.1567816333395926e-46
+	actual: 1.1093417307914119e-46
+Luminosity of the GCE (0.1-100 GeV range):a
+	As calculated from Calore spectrum: 1.6924845e+37
+	As calculated from Fermilab spectrum: 9.7787012e+36
+	As extracted from Fermilab estimates: 6.756e+36
+Energy per photon:
+	Energy per photon for 0.1-100 GeV spectrum: 0.001413444639825783
+	Energy photon for NPTF spectrum: 0.005687435941844161
+

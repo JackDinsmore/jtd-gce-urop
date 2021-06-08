@@ -1,1 +1,0 @@
-Backup made Feb 5, 2021. These are the images made in the paper. Next step is to try expanding the borders and trying different sensitivities.

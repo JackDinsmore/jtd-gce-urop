@@ -7,7 +7,7 @@ from math import pi, cos, sqrt
 DELTA_ANGLE = 0.01
 DELTA_S = 0.01
 R_C=8.5
-R_S=20
+R_S=300
 GAMMA = 1.2
 KPC_SQUARED_PER_CM_SQUARED = 3.24078e-22**2
 

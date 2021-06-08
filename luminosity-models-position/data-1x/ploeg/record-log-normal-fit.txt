@@ -1,5 +1,0 @@
-Ploeg luminosity function 
-	Total number of pulsars: 10853.066131
-	Number of visible pulsars: 8.167461
-	Fraction of seen luminosity: 0.068806
-

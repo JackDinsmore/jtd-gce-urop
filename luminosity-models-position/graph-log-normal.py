@@ -13,7 +13,7 @@ PLOT_SIZE = 50
 L_0_RANGE=[1.0e30, 2.0e36]#[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
 
-MULTIPLIER = 5
+MULTIPLIER = 1
 
 lOPowerStep = (L_0_RANGE[1] / L_0_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
@@ -28,7 +28,7 @@ DRAW_PLOEG_POINT = True
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-"+str(MULTIPLIER)+"x/log-normal/"
+PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/log-normal/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):

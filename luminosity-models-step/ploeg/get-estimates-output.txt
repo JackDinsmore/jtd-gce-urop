@@ -1,10 +1,10 @@
 Disk luminosity function:
-    Total number of pulsars:		8761.956031888772
-    Total luminosity:			6.756e+36
-    Number of pulsars above threshold:	54.53585299847195	(Fermi: 47)
-    Fraction of lum above threshold:	0.35474290922989216	(Fermi: 0.2)
+    Total number of pulsars:		25974.593611111206
+    Total luminosity:			1.5547346187395302e+37
+    Number of pulsars above threshold:	148.34899466809557	(Fermi: 47)
+    Fraction of lum above threshold:	0.16835512430130103	(Fermi: 0.2)
 Log normal fit luminosity function:
-    Total number of pulsars:		11223.394926678942
-    Total luminosity:			6.756e+36
-    Number of pulsars above threshold:	61.92009151819197	(Fermi: 47)
+    Total number of pulsars:		25828.005672429492
+    Total luminosity:			1.5547346187395302e+37
+    Number of pulsars above threshold:	142.49453800895947	(Fermi: 47)
     Fraction of lum above threshold:	0.17967294241712709	(Fermi: 0.2)

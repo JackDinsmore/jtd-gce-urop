@@ -1,2 +1,2 @@
 @echo off
-overlay-calculator\x64\Release\overlay-calculator.exe ploeg
+overlay-calculator\x64\Release\overlay-calculator.exe count ploeg

@@ -1,0 +1,1 @@
+The "full model" (blue) data from figure 4 of the Abazajian paper https://arxiv.org/pdf/1402.4090.pdf.

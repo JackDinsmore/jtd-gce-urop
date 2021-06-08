@@ -26,8 +26,25 @@ typedef std::vector<std::vector<double>> DoubleVector;
 #define L_MIN 1.0e29
 #define DIST_TO_CENTER 8.5 // kpc
 #define CM_PER_KPC_SQUARED 9.523396e+42
-#define FLUX_EXCESS 7.494712733226778e-10  // All flux units are in ergs per second per square centimeter
+#define FLUX_EXCESS 1.2953417255755896e-09  // All flux units are in ergs per second per square centimeter
 
+#define FLUX_HIST_BINS 100
+#define FLUX_HIST_LOW 1.0731612e-12
+#define FLUX_HIST_HIGH 1.3719972e-09
+#define ALPHA_HIST 1.94
+#define L_MIN_HIST 1.0e29
+#define L_MAX_HIST 1.0e35
+#define L0_HIST 0.88e34
+#define SIGMA_HIST 0.62
+#define L0_PLOEG_HIST 1.6084e+32
+#define SIGMA_PLOEG_HIST 0.7003
+#define NPTF_L_BREAK_HIST 8.656487610122969e+33
+#define NPTF_N_1_HIST -0.66
+#define NPTF_N_2_HIST 18.2
+
+
+
+std::array<double, FLUX_HIST_BINS> fluxValues, fluxWidths;
 
 const double L_MIN_RANGE[2] = { 1.0e28, 1.0e34 };
 const double L_MAX_RANGE[2] = {1.0e34, 1.0e38}; //{ 1.0e34, 1.0e36 };
@@ -73,7 +90,13 @@ enum class LUMINOSITY_FUNCTION {
 	ERROR,
 };
 
-LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW_ALPHA;
+enum class METHOD {
+	COUNT,
+	HIST,
+	ERROR,
+};
+
+LUMINOSITY_FUNCTION luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW;
 
 std::string sciNot(double value) {
 	int power = log10(value);
@@ -268,6 +291,13 @@ public:
 	double normalization;
 };
 
+template<int N>
+void addArrays(std::array<double, N>& result, std::array<double, N> summand) {
+	for (int i = 0; i < N; i++) {
+		result[i] += summand[i];
+	}
+}
+
 const SensitivityMap thresholds;
 const PloegData ploegData;
 
@@ -327,7 +357,7 @@ double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, si
 			return nptfPremul * nptfLBreak * (1 - arg1) * (1-arg2) * (1 / ((arg1-2) * (arg2-2)) + pow(nptfLBreak / start, arg1 - 2) / ((arg1 - 2) * (arg1 - arg2)));
 		}
 		else {
-			return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
+		return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
 		}
 	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
 		if (start == NULL) { start = L_MIN; }
@@ -367,7 +397,7 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
 	const double cosLat = cos(latLon.first);
 	const double cosLon = cos(latLon.second);
 	while (radialDistance < DIST_TO_CENTER + INTEGRAL_HALF_WIDTH) {
-		distFromCenter = sqrt(radialDistance * radialDistance + DIST_TO_CENTER * DIST_TO_CENTER 
+		distFromCenter = sqrt(radialDistance * radialDistance + DIST_TO_CENTER * DIST_TO_CENTER
 			- 2 * DIST_TO_CENTER * radialDistance * cosLon * cosLat);
 		nfwSquaredValue = pow(distFromCenter / NFW_SCALE_DIST, -GAMMA) * pow(1 + distFromCenter / NFW_SCALE_DIST, -3 + GAMMA);
 		nfwSquaredValue = nfwSquaredValue * nfwSquaredValue;
@@ -390,6 +420,66 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
 		}
 		// Ignore the angular part since it introduces a constant cofactor, except for the cosine term which accounts for shinking pixels far from the equator.
 
+		radialDistance += deltaRadialDistance;
+	}
+
+	return integral;
+}
+
+std::array<double, FLUX_HIST_BINS> getHistAtLatLon(CoordPair latLon, double fluxThreshold) {
+	// returns the (unscaled) value for a specific lon and lat
+
+	// Integrate value along the line of sight:
+	const double deltaRadialDistance = INTEGRAL_HALF_WIDTH * 2 / NFW_INTEGRAL_STEPS;
+	double radialDistance = DIST_TO_CENTER - INTEGRAL_HALF_WIDTH;
+	std::array<double, FLUX_HIST_BINS> integral;
+	integral.fill(0);
+	double distFromCenter, nfwSquaredValue, lThreshold;
+	const double cosLat = cos(latLon.first);
+	const double cosLon = cos(latLon.second);
+	while (radialDistance < DIST_TO_CENTER + INTEGRAL_HALF_WIDTH) {
+		distFromCenter = sqrt(radialDistance * radialDistance + DIST_TO_CENTER * DIST_TO_CENTER
+			- 2 * DIST_TO_CENTER * radialDistance * cosLon * cosLat);
+		nfwSquaredValue = pow(distFromCenter / NFW_SCALE_DIST, -GAMMA) * pow(1 + distFromCenter / NFW_SCALE_DIST, -3 + GAMMA);
+		nfwSquaredValue = nfwSquaredValue * nfwSquaredValue;
+
+		lThreshold = fluxThreshold * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+
+		for (int i = 0; i < FLUX_HIST_BINS; i++) {
+			double flux = fluxValues[i];
+			double lum = flux * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+			double lumRange = fluxWidths[i] * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+			if (lum < lThreshold) {
+				continue;
+			}
+			double prob = 0;
+			switch (luminosityFunction) {
+			case LUMINOSITY_FUNCTION::POWER_LAW:
+			case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+				prob = pow(lum, -ALPHA_HIST) * exp(-lum / L_MAX_HIST) / (improvedGamma(1 - ALPHA_HIST, L_MIN_HIST / L_MAX_HIST) * pow(L_MAX_HIST, 1 - ALPHA_HIST));
+				if (lum < L_MIN_HIST) {
+					prob = 0;
+				}
+				break;
+			case LUMINOSITY_FUNCTION::LOG_NORMAL:
+				prob = log10(exp(1))/(SIGMA_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_HIST), 2) / (2 * SIGMA_HIST * SIGMA_HIST));
+				break;
+			case LUMINOSITY_FUNCTION::PLOEG:
+				prob = log10(exp(1)) / (SIGMA_PLOEG_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_PLOEG_HIST), 2) / (2 * SIGMA_PLOEG_HIST * SIGMA_PLOEG_HIST));
+				break;
+
+			case LUMINOSITY_FUNCTION::NPTF:
+				if (lum < NPTF_L_BREAK_HIST) {
+					prob = pow(lum / NPTF_L_BREAK_HIST, -NPTF_N_1_HIST);
+				}
+				else {
+					prob = pow(lum / NPTF_L_BREAK_HIST, -NPTF_N_2_HIST);
+				}
+				prob *= (1 - NPTF_N_1_HIST) * (1 - NPTF_N_2_HIST) / (NPTF_L_BREAK_HIST * (NPTF_N_1_HIST - NPTF_N_2_HIST));
+				break;
+			}
+			integral[i] += nfwSquaredValue * radialDistance * radialDistance * deltaRadialDistance * prob * lumRange * cosLat * CM_PER_KPC_SQUARED; // Treating nfw here as a number density
+		}
 		radialDistance += deltaRadialDistance;
 	}
 
@@ -439,7 +529,7 @@ void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
 #ifndef LOTS_OF_THREADS
 	for (int i = 0; i < PLOT_SIZE; i++) {
 		double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
-		std::cout << lMin << std::endl;
+		//std::cout << lMin << std::endl;
 		for (int j = 0; j < PLOT_SIZE; j++) {
 			double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
 			(*plotMap)[i][j] = getValueAtConfig(value, lMin, lMax);
@@ -474,7 +564,7 @@ void generatePowerLawAlphaPlotMap(VALUE value, DoubleVector* plotMap) {
 #ifndef LOTS_OF_THREADS
 	for (int i = 0; i < PLOT_SIZE; i++) {
 		double alpha = i * powerSteps.first + ALPHA_RANGE[0];
-		std::cout << alpha << std::endl;
+		//std::cout << alpha << std::endl;
 		for (int j = 0; j < PLOT_SIZE; j++) {
 			double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
 			(*plotMap)[i][j] = getValueAtConfig(value, alpha, lMax);
@@ -529,10 +619,10 @@ int powerLaw() {
 		"\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale) +
 		"\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale) +
 		"\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale / FLUX_EXCESS) + "\n";
-
+	std::cout << paperScale << std::endl;
 	std::cout << writeText << std::endl;
 	std::ofstream recordFile;
-	recordFile.open(ROOT "luminosity-models-position/data/power-law/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/record.txt");
 	recordFile << writeText;
 
 	// Generate unscaled data
@@ -562,9 +652,9 @@ int powerLaw() {
 
 	// Write data to an output file
 	std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-	totalNumFile.open(ROOT "luminosity-models-position/data/power-law/total-num.txt");
-	numSeenFile.open(ROOT "luminosity-models-position/data/power-law/num-seen.txt");
-	lumSeenFile.open(ROOT "luminosity-models-position/data/power-law/lum-seen.txt");
+	totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/total-num.txt");
+	numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/num-seen.txt");
+	lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/lum-seen.txt");
 	for (int x = 0; x < totalNum.size(); x++) {
 		for (int y = 0; y < totalNum[x].size(); y++) {
 			double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -593,7 +683,7 @@ int powerLawAlpha() {
 
 	std::cout << writeText << std::endl;
 	std::ofstream recordFile;
-	recordFile.open(ROOT "luminosity-models-position/data/power-law-alpha/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/record.txt");
 	recordFile << writeText;
 
 	// Generate unscaled data
@@ -623,9 +713,9 @@ int powerLawAlpha() {
 
 	// Write data to an output file
 	std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-	totalNumFile.open(ROOT "luminosity-models-position/data/power-law-alpha/total-num.txt");
-	numSeenFile.open(ROOT "luminosity-models-position/data/power-law-alpha/num-seen.txt");
-	lumSeenFile.open(ROOT "luminosity-models-position/data/power-law-alpha/lum-seen.txt");
+	totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/total-num.txt");
+	numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/num-seen.txt");
+	lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/lum-seen.txt");
 	for (int x = 0; x < totalNum.size(); x++) {
 		for (int y = 0; y < totalNum[x].size(); y++) {
 			double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -661,7 +751,7 @@ int logNormal() {
 	std::cout << paperText << std::endl;
 	std::cout << ploegText << std::endl;
 	std::ofstream recordFile;
-	recordFile.open(ROOT "luminosity-models-position/data/log-normal/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/record.txt");
 	recordFile << paperText << std::endl;
 	recordFile << ploegText << std::endl;
 
@@ -692,9 +782,9 @@ int logNormal() {
 
 	// Write data to an output file
 	std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-	totalNumFile.open(ROOT "luminosity-models-position/data/log-normal/total-num.txt");
-	numSeenFile.open(ROOT "luminosity-models-position/data/log-normal/num-seen.txt");
-	lumSeenFile.open(ROOT "luminosity-models-position/data/log-normal/lum-seen.txt");
+	totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/total-num.txt");
+	numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/num-seen.txt");
+	lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/lum-seen.txt");
 	for (int x = 0; x < totalNum.size(); x++) {
 		for (int y = 0; y < totalNum[x].size(); y++) {
 			double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -733,7 +823,7 @@ int ploeg() {
 
 	std::cout << ploegText << std::endl;
 	std::ofstream recordFile;
-	recordFile.open(ROOT "luminosity-models-position/data/ploeg/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/record.txt");
 	recordFile << ploegText << std::endl;
 
 	std::cin.get();
@@ -782,47 +872,187 @@ int nptf() {
 		+ "\n\tFraction of seen luminosity: " + sciNot(fracFluxScaled) + "\n";
 
 	std::cout << nptfText << std::endl; std::ofstream recordFile;
-	recordFile.open(ROOT "luminosity-models-position/data/nptf/record.txt");
+	recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/record.txt");
 	recordFile << nptfText << std::endl;
 
 	std::cin.get();
 	return 1;
 }
 
+
+int hist() {
+	nptfLBreak = NPTF_L_BREAK_HIST;
+	nptfLMin = 1e29;
+	setNPTFPremul(NPTF_N_1_HIST, NPTF_N_2_HIST);
+
+
+	switch (luminosityFunction) {
+	case LUMINOSITY_FUNCTION::POWER_LAW:
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		std::cout << "Using a power law luminosity function" << std::endl << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::LOG_NORMAL:
+		std::cout << "Using a log normal luminosity function" << std::endl << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::PLOEG:
+		std::cout << "Using a log normal luminosity function (Ploeg)" << std::endl << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::NPTF:
+		std::cout << "Using an NPTF luminosity function" << std::endl << std::endl;
+		break;
+	}
+
+
+	for (double i = 0; i < FLUX_HIST_BINS; i++) {
+		double low = pow(10, (log10(FLUX_HIST_HIGH) - log10(FLUX_HIST_LOW)) * (i / FLUX_HIST_BINS) + log10(FLUX_HIST_LOW));
+		double high = pow(10, (log10(FLUX_HIST_HIGH) - log10(FLUX_HIST_LOW)) * ((i + 1) / FLUX_HIST_BINS) + log10(FLUX_HIST_LOW));
+		fluxValues[i] = (low + high) / 2;
+		fluxWidths[i] = high - low;
+	}
+
+	std::array<double, FLUX_HIST_BINS> probs;
+	probs.fill(0);
+
+	for (int x = 0; x < thresholds.skyShape.first; x++) {
+		//std::cout << x << '/' << skyMap->size() << std::endl;
+		for (int y = 0; y < thresholds.skyShape.second; y++) {
+			CoordPair latLon = thresholds.indexToLatLon({ x, y });
+			if (myAbs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
+				std::array<double, FLUX_HIST_BINS> probs_here = getHistAtLatLon(latLon, thresholds.getFluxThreshold(latLon));
+				addArrays(probs, probs_here);
+			}
+		}
+	}
+
+
+	double scale;
+	switch (luminosityFunction) {
+	case LUMINOSITY_FUNCTION::POWER_LAW:
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, L_MIN_HIST, L_MAX_HIST);
+		break;
+	case LUMINOSITY_FUNCTION::LOG_NORMAL:
+		scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, L0_HIST, SIGMA_HIST);
+		break;
+	case LUMINOSITY_FUNCTION::PLOEG:
+		scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, L0_PLOEG_HIST, SIGMA_PLOEG_HIST);
+		break;
+	case LUMINOSITY_FUNCTION::NPTF:
+		scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, NPTF_N_1_HIST, NPTF_N_2_HIST);
+		break;
+	};
+
+	std::cout << scale << std::endl;
+
+
+	for (double& prob : probs) {
+		prob *= scale;
+	}
+
+	// Write data to an output file
+	std::ofstream histFile;
+	switch (luminosityFunction) {
+	case LUMINOSITY_FUNCTION::POWER_LAW:
+	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+		histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/flux-hist.txt");
+		histFile << "alpha = " << ALPHA_HIST << ", L_min = " << L_MIN_HIST << ", L_max = " << L_MAX_HIST << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::LOG_NORMAL:
+		histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/flux-hist.txt");
+		histFile << "L0 = " << L0_HIST << ", sigma = " << SIGMA_HIST << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::PLOEG:
+		histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/flux-hist.txt");
+		histFile << "L0 = " << L0_PLOEG_HIST << ", sigma = " << SIGMA_PLOEG_HIST << std::endl;
+		break;
+	case LUMINOSITY_FUNCTION::NPTF:
+		histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/flux-hist.txt");
+		histFile << "L_break = " << NPTF_L_BREAK_HIST << ", n1 = " << NPTF_N_1_HIST << ", n2 = " << NPTF_N_2_HIST << std::endl;
+		break;
+	}
+	for (double value : probs) {
+		histFile << value << ',';
+	}
+	histFile << std::endl;
+
+	for (double value : fluxValues) {
+		histFile << value << ',';
+	}
+	histFile << std::endl;
+
+	std::cout << "Done." << std::endl;
+	std::cin.get();
+	return 1;
+}
+
+
 int main(int argc, char** argv) {
-	if (argc == 2) {
-		if (strcmp(argv[1], "powerlaw") == 0) {
+	std::cout << "Sensitivity " << SENSITIVITY_DIVISOR << std::endl;
+	METHOD method = METHOD::HIST;
+	if (argc == 3) {
+		if (strcmp(argv[2], "powerlaw") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW;
 		}
-		else if (strcmp(argv[1], "lognormal") == 0) {
+		else if (strcmp(argv[2], "lognormal") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::LOG_NORMAL;
 		}
-		else if (strcmp(argv[1], "ploeg") == 0) {
+		else if (strcmp(argv[2], "ploeg") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::PLOEG;
 		}
-		else if (strcmp(argv[1], "nptf") == 0) {
+		else if (strcmp(argv[2], "nptf") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::NPTF;
 		}
-		else if (strcmp(argv[1], "alpha") == 0) {
+		else if (strcmp(argv[2], "alpha") == 0) {
 			luminosityFunction = LUMINOSITY_FUNCTION::POWER_LAW_ALPHA;
 		}
 		else {
 			luminosityFunction = LUMINOSITY_FUNCTION::ERROR;
 		}
+
+		if (strcmp(argv[1], "count") == 0) {
+			method = METHOD::COUNT;
+		}
+		else if (strcmp(argv[1], "hist") == 0) {
+			method = METHOD::HIST;
+		}
+		else {
+			method = METHOD::ERROR;
+		}
 	}
-	switch (luminosityFunction) {
-	case LUMINOSITY_FUNCTION::POWER_LAW:
-		return powerLaw();
-	case LUMINOSITY_FUNCTION::LOG_NORMAL:
-		return logNormal();
-	case LUMINOSITY_FUNCTION::PLOEG:
-		return ploeg();
-	case LUMINOSITY_FUNCTION::NPTF:
-		return nptf();
-	case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-		return powerLawAlpha();
-	case LUMINOSITY_FUNCTION::ERROR:
-		std::cout << "The argument \"" + std::string(argv[0]) + "\" is not supported. Options are \"powerlaw\", \"lognormal\", \"ploeg\", \"alpha\" and \"nptf\"." << std::endl;
+
+	if (method == METHOD::COUNT) {
+		std::cout << "Count" << std::endl;
+		switch (luminosityFunction) {
+		case LUMINOSITY_FUNCTION::POWER_LAW:
+			return powerLaw();
+		case LUMINOSITY_FUNCTION::LOG_NORMAL:
+			return logNormal();
+		case LUMINOSITY_FUNCTION::PLOEG:
+			return ploeg();
+		case LUMINOSITY_FUNCTION::NPTF:
+			return nptf();
+		case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+			return powerLawAlpha();
+		case LUMINOSITY_FUNCTION::ERROR:
+			std::cout << "The argument \"" + std::string(argv[2]) + "\" is not supported. Options are \"powerlaw\", \"lognormal\", \"ploeg\", \"alpha\" and \"nptf\"." << std::endl;
+			return 0;
+		}
+	}
+
+	else if (method == METHOD::HIST) {
+		std::cout << "Hist" << std::endl;
+		switch (luminosityFunction) {
+		case LUMINOSITY_FUNCTION::ERROR:
+			std::cout << "The argument \"" + std::string(argv[2]) + "\" is not supported. Options are \"powerlaw\", \"lognormal\", \"ploeg\", \"alpha\" and \"nptf\"." << std::endl;
+			return 0;
+		default:
+			return hist();
+		}
+	}
+
+	else {
+		std::cout << "The argument \"" + std::string(argv[1]) + "\" is not supported. Options are \"count\" and \"hist\"." << std::endl;
 		return 0;
 	}
+	return 1;
 }

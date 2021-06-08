@@ -7,7 +7,7 @@ and how much flux above the threshold it should have seen.
 import ploegload as pl
 from matplotlib import pyplot as plt
 
-L_EXCESS = 6.756e36  # All units are in ergs per second
+L_EXCESS = 1.2953417255755896e-09 / 8.331593765023139e-47  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_MIN = 1e29
 L_MAX = 1.0e35

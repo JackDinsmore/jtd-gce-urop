@@ -9,7 +9,7 @@ plt.style.use('latex')
 
 DIM_TRIALS=100
 
-L_EXCESS = 6.756e36  # All units are in ergs per second
+L_EXCESS = 1.2953417255755896e-09 / 8.331593765023139e-47# 6.756e36  # All units are in ergs per second
 L_THRESH = 1.0e34
 L_0_RANGE=[1.0e30, 2.0e36]#[1.0e32, 2.0e34]
 SIGMA_L_RANGE=[0.001, 1]
@@ -222,6 +222,6 @@ plt.tight_layout()
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig("contour-overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig("contour-overlay.png")
+    plt.savefig("overlay.png")
 
 plt.show()

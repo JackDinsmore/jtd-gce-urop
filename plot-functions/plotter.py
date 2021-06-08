@@ -100,7 +100,7 @@ ys = [
     [10**l * nptf(10**l, N_BELOW_NFW, N_ABOVE_NFW, L_BREAK_NFW) for l in x],
     [10**l * nptf(10**l, N_BELOW_DISK, N_ABOVE_DISK, L_BREAK_DISK) for l in x],
 ]
-names = ["Power law", "Log normal", "Custom", "Log normal fit", "NFW PS", "Disk PS"]
+names = ["Power law", "Log normal", "Log normal fit", "Custom", "NFW PS", "Disk PS"]
 
 for i in range(len(ys)):
     plt.plot(x, ys[i] / max(ys[i]), label = names[i])

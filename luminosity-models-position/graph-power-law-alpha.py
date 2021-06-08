@@ -5,7 +5,7 @@ import matplotlib.colors as colors
 from matplotlib.lines import Line2D
 import numpy as np
 
-plt.style.use('latex')
+plt.style.use('revtex')
 
 
 PLOT_SIZE = 50
@@ -87,9 +87,9 @@ for line in f.read().split('\n')[:-1]:
         enterLine.append(float(item) / TOTAL_FLUX)
     lumSeen.append(np.asarray(enterLine))
 
-totalNum = np.stack(totalNum, axis=0)
-numSeen = np.stack(numSeen, axis=0)
-lumSeen = np.stack(lumSeen, axis=0)
+totalNum = np.transpose(np.stack(totalNum, axis=0))
+numSeen = np.transpose(np.stack(numSeen, axis=0))
+lumSeen = np.transpose(np.stack(lumSeen, axis=0))
 
 # ========================= Display data =========================
 
@@ -101,10 +101,10 @@ lMaxVals = [L_MAX_RANGE[0] * maxPowerStep**j for j in range(PLOT_SIZE)]
 
 fig, ax = plt.subplots(figsize=(6, 4))
 
-plt.xscale("log")
+#plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("$L_{max}$")
-plt.ylabel("$L_{min}$")
+plt.xlabel("$\\alpha$")
+plt.ylabel("$L_\mathrm{max}$")
 plt.title("Power-law, position-dependent{}".format("" if MULTIPLIER is None else (", sensitivity x"+str(MULTIPLIER))))
 
 c1 = plt.pcolor(alphaVals, lMaxVals, totalNum, 
