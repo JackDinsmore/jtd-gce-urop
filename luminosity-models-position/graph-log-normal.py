@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib.lines import Line2D
 
-plt.style.use('latex')
+plt.style.use('revtex-presentation')
 
 
 PLOT_SIZE = 50
@@ -22,13 +22,13 @@ FRAC_ABOVE_THRESHOLD=1/5.0
 TOTAL_FLUX = 7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
-LINE_COLOR = (0.8, 0.3, 0.1)
+LINE_COLOR = "C1"
 DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/log-normal/"
+PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/log-normal/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -43,7 +43,7 @@ def shade(field, threshold, xs, ys, off=False):
                 fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
                 px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
                 py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
-    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.5)
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.7)
 
 # ========================== Load data ===========================
 
@@ -85,20 +85,20 @@ xVals = [L_0_RANGE[0] * lOPowerStep**i for i in range(PLOT_SIZE)]
 yVals = [SIGMA_L_RANGE[0] + (SIGMA_L_RANGE[1]-SIGMA_L_RANGE[0]) / PLOT_SIZE * j for j in range(PLOT_SIZE)]
 
 
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots()
 plt.xlim(left=L_0_RANGE[0], right=L_0_RANGE[1])
 plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
-plt.xlabel("$L_0$")
-plt.title("Log-normal, position-dependent{}".format("" if (MULTIPLIER is None) else (", sensitivity x"+str(MULTIPLIER))))
+plt.xlabel("$L_0$ [ergs / s]")
 
 cols = colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                    vmax=max([max(v) for v in totalNum]))
-c1 = plt.pcolor(xVals, yVals, totalNum, 
+c1 = plt.contourf(xVals, yVals, totalNum,
                    norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                    vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
+
 cbar = plt.colorbar(c1, extend='max')
 cbar.set_label("$N$")
 
@@ -107,15 +107,15 @@ cbar.set_label("$N$")
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, numSeen, [10*i for i in range(1, 10)], 
         colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="Number constraint")
+plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2)
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
     plt.contour(xVals, yVals, lumSeen, [0.5 * i for i in range(1, 10)], 
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="Fraction constraint")
+plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2)
 
-plt.scatter(paperPoint[0], paperPoint[1], c='blue')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^')
 #plt.scatter(minPoint[0], minPoint[1], c='cyan')
 
 # Observation
@@ -126,11 +126,13 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 # Final points 
 
 if DRAW_PLOEG_POINT:
-    plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
+    plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
-plt.legend(custom_lines, ['Number constraint', 'fraction constraint'], loc="upper right")
+                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2)),
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
+plt.legend(custom_lines, ['Number constraint', 'fraction constraint', "Globular cluster point", "Ploeg point"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 
