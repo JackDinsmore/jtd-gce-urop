@@ -16,7 +16,7 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define SENSITIVITY_DIVISOR 10.0
+#define SENSITIVITY_DIVISOR 1.0
 
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001
@@ -64,7 +64,7 @@ const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
 #define PLOT_SIZE 50
 #define FERMILAB_ALPHA 1.94
 
-#define ROOT "C:/Users/goods/Dropbox (MIT)/GCE UROP/"
+#define ROOT "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/"
 #define SENSITIVITY_PATH (ROOT "sensitivity/sensitivity.txt")
 #define PLOEG_PATH (ROOT "luminosity-models-step/ploeg/data/disk.csv")
 #define DISPLAY_SIZE 20.0
@@ -290,13 +290,6 @@ public:
     std::vector<double> logxs, ys, xs;
     double normalization;
 };
-
-template<int N>
-void addArrays(std::array<double, N>& result, std::array<double, N> summand) {
-    for (int i = 0; i < N; i++) {
-        result[i] += summand[i];
-    }
-}
 
 const SensitivityMap thresholds;
 const PloegData ploegData;
@@ -919,7 +912,9 @@ int hist() {
             CoordPair latLon = thresholds.indexToLatLon({ x, y });
             if (myAbs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
                 std::array<double, FLUX_HIST_BINS> probs_here = getHistAtLatLon(latLon, thresholds.getFluxThreshold(latLon));
-                addArrays(probs, probs_here);
+                for (int i = 0; i < FLUX_HIST_BINS; i++) {
+                    probs[i] += probs_here[i];
+                }
             }
         }
     }

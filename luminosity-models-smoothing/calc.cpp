@@ -8,6 +8,8 @@
 #include <future>
 #include <boost/math/special_functions/gamma.hpp>
 
+#define INVALID -3789213.4812047 // A random number designed to encode an invalid input.
+
 typedef std::pair<double, double> CoordPair;
 typedef std::pair<int, int> IndexPair;
 typedef std::vector<std::vector<double>> DoubleVector;
@@ -16,14 +18,14 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define SENSITIVITY_DIVISOR 10.0
+#define SENSITIVITY_DIVISOR 1.0
 
-#define pi 3.14159265358979323
+#define PI 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define ALPHA 1.94
-#define L_MIN 1.0e29
+#define ALPHA 1.94 // for power law
+#define L_MIN 1.0e29 // for power law alpha
 #define DIST_TO_CENTER 8.5 // kpc
 #define CM_PER_KPC_SQUARED 9.523396e+42
 #define FLUX_EXCESS 1.2953417255755896e-09  // All flux units are in ergs per second per square centimeter
@@ -41,6 +43,10 @@ typedef std::vector<std::vector<double>> DoubleVector;
 #define NPTF_L_BREAK_HIST 8.656487610122969e+33
 #define NPTF_N_1_HIST -0.66
 #define NPTF_N_2_HIST 18.2
+
+#define START_FLUX_INTEGRAL 1.0e-25
+#define STOP_FLUX_INTEGRAL 1.0e35
+#define NUM_FLUX_STEPS 1e5
 
 
 
@@ -64,7 +70,7 @@ const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
 #define PLOT_SIZE 50
 #define FERMILAB_ALPHA 1.94
 
-#define ROOT "C:/Users/goods/Dropbox (MIT)/GCE UROP/"
+#define ROOT "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/"
 #define SENSITIVITY_PATH (ROOT "sensitivity/sensitivity.txt")
 #define PLOEG_PATH (ROOT "luminosity-models-step/ploeg/data/disk.csv")
 #define DISPLAY_SIZE 20.0
@@ -144,11 +150,11 @@ public:
     CoordPair indexToLatLon(IndexPair xy) const {
         double deltaXFrac = 1 - xy.first / (skyShape.first / 2.0);
         double deltaYFrac = xy.second / (skyShape.second / 2.0) - 1;
-        return { DISPLAY_SIZE * deltaXFrac * pi / 180.0, DISPLAY_SIZE * deltaYFrac * pi / 180.0 };
+        return { DISPLAY_SIZE * deltaXFrac * PI / 180.0, DISPLAY_SIZE * deltaYFrac * PI / 180.0 };
     }
     IndexPair latLonToIndex(CoordPair latLon) const {
-        double deltaXFrac = latLon.first * 180.0 / pi / DISPLAY_SIZE;
-        double deltaYFrac = latLon.second * 180.0 / pi / DISPLAY_SIZE;
+        double deltaXFrac = latLon.first * 180.0 / PI / DISPLAY_SIZE;
+        double deltaYFrac = latLon.second * 180.0 / PI / DISPLAY_SIZE;
         return { int((1 - deltaXFrac) * (skyShape.first / 2.0)), int((1 + deltaYFrac) * (skyShape.second / 2.0)) };
     }
     double getFluxThreshold(CoordPair latLon) const {
@@ -163,143 +169,7 @@ public:
     DoubleVector fluxes;
 };
 
-class PloegData {
-public:
-    PloegData() {
-        std::ifstream ploegFile;
-        ploegFile.open(PLOEG_PATH);
-        if (ploegFile.is_open()) {
-            std::string line;
-            while (std::getline(ploegFile, line)) {
-                std::vector<double> v;
-                std::stringstream ss(line);
-                for (double d; ss >> d;) {
-                    v.push_back(d); // L, dN/dlogL
-                    if (ss.peek() == ',') {
-                        ss.ignore();
-                    }
-                }
-                xs.push_back(pow(10, v[0]));
-                logxs.push_back(v[0]);
-                ys.push_back(log10(exp(1)) / pow(10, v[0]) * v[1]);
-            }
-        }
-        else {
-            std::cout << "Ploeg data not found." << std::endl;
-            std::cin.get();
-        }
-
-        normalization = integrate(pow(10, logxs[0]) * ONE_PLUS_EPSILON, false);
-    }
-    double operator()(double l) const {// l is the log10 of the luminosity
-        if (l <= logxs[0]) { return ys[0]; }
-        if (l >= logxs[logxs.size() - 1]) { return ys[ys.size() - 1]; }
-
-        // Binary search for l:
-        int leftIndex = 0;
-        int rightIndex = logxs.size() - 1;
-        for (;;) {
-            int midIndex = (rightIndex + leftIndex) / 2;
-            if (logxs[midIndex] > l) {
-                rightIndex = midIndex;
-            }
-            else if (logxs[midIndex] < l) {
-                leftIndex = midIndex;
-            }
-            else {
-                return ys[midIndex];
-            }
-            if (rightIndex - leftIndex <= 1) {
-                assert(leftIndex != rightIndex);
-                return ys[leftIndex] + (ys[rightIndex] - ys[leftIndex]) * (l - logxs[leftIndex]) / (logxs[rightIndex] - logxs[leftIndex]);
-            }
-        }
-    }
-
-public:
-    double integrate(double start, bool normalize=true) const {
-        int i;
-        for (i = 0; i < xs.size() && xs[i] < start; i++);
-        assert(i < xs.size());
-        assert(i > 0);
-        double frac = (start - xs[i - 1]) / (xs[i] - xs[i - 1]);
-        double startY = ys[i - 1] + (ys[i] - ys[i - 1]) * frac;
-        double integral = 0.5 * (startY + ys[i]) * (xs[i] - start);
-        for (; i < xs.size() - 1; i++) {
-            integral += 0.5 * (ys[i] + ys[i + 1]) * (xs[i + 1] - xs[i]);
-        }
-        if (normalize) {
-            return integral / normalization;
-        }
-        else {
-            return integral;
-        }
-
-        /*double integral = 0;
-        for (double logx = log10(start); logx < logxs[logxs.size() - 1]; logx += INTEGRATION_LOG_STEP) {
-            // Trapezoidal integration
-            double xLow = pow(10, logx);
-            double xHigh = pow(10, logx + INTEGRATION_LOG_STEP);
-            double yLow = operator()(logx);
-            double yHigh = operator()(logx + INTEGRATION_LOG_STEP);
-            integral += (yLow + yHigh) / 2 * (xHigh - xLow);
-        }
-        if (normalize) {
-            return integral / normalization;
-        }
-        else {
-            return integral;
-        }*/
-    }
-
-    double lintegrate(double start, bool normalize = true) const {int i;
-        for (i = 0; i < xs.size() && xs[i] < start; i++);
-        assert(i < xs.size());
-        assert(i > 0);
-        double frac = (start - xs[i - 1]) / (xs[i] - xs[i - 1]);
-        double startY = ys[i - 1] + (ys[i] - ys[i - 1]) * frac;
-        double integral = 1 / 6.0 * (-start * start * (ys[i] + 2 * startY) + start * xs[i] * (startY - ys[i]) + xs[i] * xs[i] * (2 * ys[i] + startY));
-        for (; i < xs.size() - 1; i++) {
-            integral += 1 / 6.0 * (ys[i] * (-2 * xs[i] * xs[i] + xs[i] * xs[i + 1] + xs[i + 1] * xs[i + 1])
-                + ys[i + 1] * (-xs[i] * xs[i] - xs[i] * xs[i + 1] + 2 * xs[i + 1] * xs[i + 1]));
-        }
-        if (normalize) {
-            return integral / normalization;
-        }
-        else {
-            return integral;
-        }
-        /*double integral = 0;
-        for (double logx = log10(start); logx < logxs[logxs.size() - 1]; logx += INTEGRATION_LOG_STEP) {
-            // Trapezoidal integration
-            double xLow = pow(10, logx);
-            double xHigh = pow(10, logx + INTEGRATION_LOG_STEP);
-            double yLow = operator()(logx);
-            double yHigh = operator()(logx + INTEGRATION_LOG_STEP);
-            integral += (xLow * yLow + xHigh * yHigh) / 2 * (xHigh - xLow);
-        }
-        if (normalize) {
-            return integral / normalization;
-        }
-        else {
-            return integral;
-        }*/
-    }
-
-public:
-    std::vector<double> logxs, ys, xs;
-    double normalization;
-};
-
-template<int N>
-void addArrays(std::array<double, N>& result, std::array<double, N> summand) {
-    for (int i = 0; i < N; i++) {
-        result[i] += summand[i];
-    }
-}
-
 const SensitivityMap thresholds;
-const PloegData ploegData;
 
 void setNPTFPremul(double n1, double n2) {
     nptfPremul = (n1 - n2) / (n1 - n2 - (1 - n2) * pow(nptfLMin / nptfLBreak, 1 - n1));
@@ -318,71 +188,130 @@ double improvedGamma(double s, double x) {
     return boost::math::tgamma(s, x);
 }
 
-double integrate(double start, double arg1, double arg2) {// arg1, arg2; l0, sigma; nBelow, nAbove
+double stripped_lum_func(double lum, double arg1, double arg2) {// lMin, lMax; l0, sigma; n1, n2; alpha, lMin
+    // Returns the luminosity function with constants factored out. To be used
+    // in a numerical integral
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        return improvedGamma(1 - ALPHA, start / arg2) / improvedGamma(1 - ALPHA, arg1 / arg2);
+        return pow(lum, -ALPHA) * exp(-lum / arg2);
     case LUMINOSITY_FUNCTION::LOG_NORMAL:
-        return 0.5 * (1 - erf((log10(start)-log10(arg1))/(sqrt(2) * arg2)));
     case LUMINOSITY_FUNCTION::PLOEG:
-        return ploegData.integrate(start);
+        return exp(-pow(log10(lum) - log10(arg1), 2) / (2 * arg2 * arg2)) / lum;
     case LUMINOSITY_FUNCTION::NPTF:
-        if (start < nptfLBreak) {
-            return nptfPremul * (1 - pow(nptfLBreak / start, arg1 - 1) * (arg2 - 1) / (arg2 - arg1));
+        if (lum < nptfLBreak) {
+            return pow(lum / nptfLBreak, -arg1);
         }
         else {
-            return nptfPremul * pow(nptfLBreak / start, arg2 - 1) * (1 - arg1) / (arg2 - arg1);
+            return pow(lum / nptfLBreak, -arg2);
         }
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        return improvedGamma(1 - arg1, start / arg2) / improvedGamma(1 - arg1, L_MIN / arg2);
+        return 1.0 / (improvedGamma(1-arg1, L_MIN / arg2) * pow(arg2, 1-arg1));
     default:
         std::cout << "Running integrate with an invalid luminosity function." << std::endl;
         std::cin.get();
+        return 0;
     }
 }
 
-double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, sigma
+double get_lum_func_strip(double arg1, double arg2) {
+    // Returns constants that were factored out from stripped_lum_func.
+    // To be used in a numerical integral
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        if (start == NULL) { start = arg1; }
-        return arg2 * improvedGamma(2 - ALPHA, start / arg2) / improvedGamma(1 - ALPHA, arg1 / arg2);
+        return 1.0 / (improvedGamma(1-ALPHA, arg1 / arg2) * pow(arg2, 1-ALPHA));
     case LUMINOSITY_FUNCTION::LOG_NORMAL:
-        if (start == NULL) { start = 0; }
-        return 0.5 * arg1 * exp(arg2 * arg2 * log(10)*log(10) / 2) * (1 - erf((log10(start) - log10(arg1) - arg2 * arg2 * log(10)) / (sqrt(2) * arg2)));
     case LUMINOSITY_FUNCTION::PLOEG:
-        if (start == NULL) { start = pow(10, ploegData.logxs[0]) * ONE_PLUS_EPSILON; }
-        return ploegData.lintegrate(start);
+        return log10(exp(1)) / (arg2 * sqrt(2 * PI));
     case LUMINOSITY_FUNCTION::NPTF:
-        if (start < nptfLBreak) {
-            return nptfPremul * nptfLBreak * (1 - arg1) * (1-arg2) * (1 / ((arg1-2) * (arg2-2)) + pow(nptfLBreak / start, arg1 - 2) / ((arg1 - 2) * (arg1 - arg2)));
-        }
-        else {
-        return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
-        }
+        return (1 - arg1) * (1 - arg2) / (nptfLBreak * (arg1 - arg2));
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        if (start == NULL) { start = L_MIN; }
-        return arg2 * improvedGamma(2 - arg1, start / arg2) / improvedGamma(1 - arg1, L_MIN / arg2);
+        return 1.0 / (improvedGamma(1-arg1, L_MIN / arg2) * pow(arg2, 1-arg1));
     default:
         std::cout << "Running integrate with an invalid luminosity function." << std::endl;
         std::cin.get();
+        return 0;
     }
+}
+
+double sensitivity(double flux, double threshold) {
+    if (flux > threshold) {
+        return 1.0;
+    }
+    return 0.0;
+}
+
+double integrate(double threshold, double distance, double arg1, double arg2) {
+    // lMin, lMax; l0, sigma; nBelow, nAbove
+    double integral = 0;
+    double start_flux_integral;
+    switch (luminosityFunction) {
+    case LUMINOSITY_FUNCTION::POWER_LAW:
+        start_flux_integral = arg1;
+        break;
+    case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+        start_flux_integral = L_MIN;
+        break;
+    default:
+        start_flux_integral = START_FLUX_INTEGRAL;
+        break;
+    }
+    double step_width = (STOP_FLUX_INTEGRAL - START_FLUX_INTEGRAL) / 
+        NUM_FLUX_STEPS;
+    for (double flux = START_FLUX_INTEGRAL;
+        flux < STOP_FLUX_INTEGRAL;
+        flux += step_width) {
+
+        double sensitivity_multiplier = sensitivity(flux, threshold);
+        double lum = flux * (4 * PI * distance * distance);
+        integral += sensitivity_multiplier * stripped_lum_func(lum, arg1, arg2);
+    }
+
+    return integral * step_width * get_lum_func_strip(arg1, arg2);
+}
+
+double lintegrate(double threshold, double distance, double arg1, double arg2) {
+    // lMin, lMax; l0, sigma; nBelow, nAbove
+    double integral = 0;
+    double start_flux_integral;
+    switch (luminosityFunction) {
+    case LUMINOSITY_FUNCTION::POWER_LAW:
+        start_flux_integral = arg1;
+        break;
+    case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
+        start_flux_integral = L_MIN;
+        break;
+    default:
+        start_flux_integral = START_FLUX_INTEGRAL;
+        break;
+    }
+    double step_width = (STOP_FLUX_INTEGRAL - START_FLUX_INTEGRAL) / 
+        NUM_FLUX_STEPS;
+    for (double flux = START_FLUX_INTEGRAL;
+        flux < STOP_FLUX_INTEGRAL;
+        flux += step_width) {
+
+        double sensitivity_multiplier = sensitivity(flux, threshold);
+        double lum = flux * (4 * PI * distance * distance);
+        integral += lum * sensitivity_multiplier *
+            stripped_lum_func(lum, arg1, arg2);
+    }
+
+    return integral * step_width * get_lum_func_strip(arg1, arg2);
 }
 
 
 // ================= Declare helper functions =======================
 
-double numSeenFunc(double threshold, double arg1, double arg2) {// Returns(unscaled) number of visible pulsars
-    //assert(threshold > arg1);
-    return integrate(threshold, arg1, arg2);
+double numSeenFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) number of visible pulsars
+    return integrate(threshold, distance, arg1, arg2);
 }
 
-double fluxSeenFunc(double threshold, double arg1, double arg2) {// Returns(unscaled) amount of luminosity visible
-    //assert(threshold > arg1);
-    return lintegrate(threshold, arg1, arg2);
+double fluxSeenFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) amount of luminosity visible
+    return lintegrate(threshold, distance, arg1, arg2);
 }
 
-double totalFluxFunc(double threshold, double arg1, double arg2) {// Returns(unscaled) total luminosity
-    return lintegrate(NULL, arg1, arg2);
+double totalFluxFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) total luminosity
+    return lintegrate(INVALID, distance, arg1, arg2);
 }
 
 
@@ -402,23 +331,23 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
         nfwSquaredValue = pow(distFromCenter / NFW_SCALE_DIST, -GAMMA) * pow(1 + distFromCenter / NFW_SCALE_DIST, -3 + GAMMA);
         nfwSquaredValue = nfwSquaredValue * nfwSquaredValue;
 
-        lThreshold = fluxThreshold * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+        lThreshold = fluxThreshold * 4 * PI * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
 
         switch (value) {
         case VALUE::TOTAL_NUM:
             integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * CM_PER_KPC_SQUARED;
             break;
         case VALUE::SEEN_NUM:
-            integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * numSeenFunc(lThreshold, arg1, arg2) * CM_PER_KPC_SQUARED;
+            integral += nfwSquaredValue * deltaRadialDistance * radialDistance * radialDistance * cosLat * numSeenFunc(fluxThreshold, radialDistance, arg1, arg2) * CM_PER_KPC_SQUARED;
             break;
         case VALUE::TOTAL_FLUX:
-            integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * totalFluxFunc(lThreshold, arg1, arg2);
+            integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * PI) * totalFluxFunc(fluxThreshold, radialDistance, arg1, arg2);
             break;
         case VALUE::SEEN_FLUX:
-            integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * pi) * fluxSeenFunc(lThreshold, arg1, arg2);
+            integral += nfwSquaredValue * deltaRadialDistance * cosLat / (4 * PI) * fluxSeenFunc(fluxThreshold, radialDistance, arg1, arg2);
             break;
         }
-        // Ignore the angular part since it introduces a constant cofactor, except for the cosine term which accounts for shinking pixels far from the equator.
+        // Ignore the angular part since it introduces a constant cofactor, except for the cosine term which accounts for shinking PIxels far from the equator.
 
         radialDistance += deltaRadialDistance;
     }
@@ -428,7 +357,6 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
 
 std::array<double, FLUX_HIST_BINS> getHistAtLatLon(CoordPair latLon, double fluxThreshold) {
     // returns the (unscaled) value for a specific lon and lat
-
     // Integrate value along the line of sight:
     const double deltaRadialDistance = INTEGRAL_HALF_WIDTH * 2 / NFW_INTEGRAL_STEPS;
     double radialDistance = DIST_TO_CENTER - INTEGRAL_HALF_WIDTH;
@@ -443,12 +371,12 @@ std::array<double, FLUX_HIST_BINS> getHistAtLatLon(CoordPair latLon, double flux
         nfwSquaredValue = pow(distFromCenter / NFW_SCALE_DIST, -GAMMA) * pow(1 + distFromCenter / NFW_SCALE_DIST, -3 + GAMMA);
         nfwSquaredValue = nfwSquaredValue * nfwSquaredValue;
 
-        lThreshold = fluxThreshold * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+        lThreshold = fluxThreshold * 4 * PI * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
 
         for (int i = 0; i < FLUX_HIST_BINS; i++) {
             double flux = fluxValues[i];
-            double lum = flux * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
-            double lumRange = fluxWidths[i] * 4 * pi * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+            double lum = flux * 4 * PI * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
+            double lumRange = fluxWidths[i] * 4 * PI * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
             if (lum < lThreshold) {
                 continue;
             }
@@ -462,10 +390,10 @@ std::array<double, FLUX_HIST_BINS> getHistAtLatLon(CoordPair latLon, double flux
                 }
                 break;
             case LUMINOSITY_FUNCTION::LOG_NORMAL:
-                prob = log10(exp(1))/(SIGMA_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_HIST), 2) / (2 * SIGMA_HIST * SIGMA_HIST));
+                prob = log10(exp(1))/(SIGMA_HIST * sqrt(2 * PI) * lum) * exp(-pow(log10(lum) - log10(L0_HIST), 2) / (2 * SIGMA_HIST * SIGMA_HIST));
                 break;
             case LUMINOSITY_FUNCTION::PLOEG:
-                prob = log10(exp(1)) / (SIGMA_PLOEG_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_PLOEG_HIST), 2) / (2 * SIGMA_PLOEG_HIST * SIGMA_PLOEG_HIST));
+                prob = log10(exp(1)) / (SIGMA_PLOEG_HIST * sqrt(2 * PI) * lum) * exp(-pow(log10(lum) - log10(L0_PLOEG_HIST), 2) / (2 * SIGMA_PLOEG_HIST * SIGMA_PLOEG_HIST));
                 break;
 
             case LUMINOSITY_FUNCTION::NPTF:
@@ -494,7 +422,7 @@ void generateValueSkyMap(VALUE value, DoubleVector* skyMap, double arg1, double 
         //std::cout << x << '/' << skyMap->size() << std::endl;
         for (int y = 0; y < (*skyMap)[x].size(); y++) {
             CoordPair latLon = thresholds.indexToLatLon({ x, y });
-            if (myAbs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
+            if (myAbs(latLon.first) > 2 * PI / 180) {// Cut out 2 degrees around the equator on each side.
                 //std::cout << "Evaluating latLon " << latLon.first << " " << latLon.second << std::endl;
                 double val = getValueAtLatLon(latLon, thresholds.getFluxThreshold(latLon), value, arg1, arg2);
                 (*skyMap)[x][y] = val;
@@ -614,15 +542,28 @@ void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
 // ========================= Generate data =========================
 int powerLaw() {
     std::cout << "Using a power law luminosity function" << std::endl << std::endl;
-    double paperScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_total_flux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_total_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::TOTAL_NUM, 
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_seen_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_NUM, 
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_seen_flux = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_FLUX, 
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    double paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string writeText = "Paper values: (lMin = " + sciNot(fermilabPaperPoint[1]) + " ergs/s, lMax = " + sciNot(fermilabPaperPoint[0]) + " ergs/s)\n" +
-        "\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, fermilabPaperPoint[1], fermilabPaperPoint[0]) * paperScale / FLUX_EXCESS) + "\n";
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+            paperScale) +
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+            paperScale) +
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+            paperScale / FLUX_EXCESS) + "\n";
     std::cout << paperScale << std::endl;
     std::cout << writeText << std::endl;
     std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/record.txt");
     recordFile << writeText;
 
     // Generate unscaled data
@@ -652,9 +593,9 @@ int powerLaw() {
 
     // Write data to an output file
     std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-    totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/total-num.txt");
-    numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/num-seen.txt");
-    lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/lum-seen.txt");
+    totalNumFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/total-num.txt");
+    numSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/num-seen.txt");
+    lumSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/lum-seen.txt");
     for (int x = 0; x < totalNum.size(); x++) {
         for (int y = 0; y < totalNum[x].size(); y++) {
             double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -668,22 +609,34 @@ int powerLaw() {
     }
 
     std::cout << "Done." << std::endl;
-    system("python \"" ROOT "luminosity-models-position/graph-power-law.py\"");
+    system("python \"" ROOT "luminosity-models-smoothing/graph-power-law.py\"");
     std::cin.get();
     return 1;
 }
 
 int powerLawAlpha() {
     std::cout << "Using a power law alpha luminosity function" << std::endl << std::endl;
-    double paperScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]);
+    std::future<double> raw_total_flux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]);
+    std::future<double> raw_total_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::TOTAL_NUM, 
+        FERMILAB_ALPHA, fermilabPaperPoint[0]);
+    std::future<double> raw_seen_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_NUM, 
+        FERMILAB_ALPHA, fermilabPaperPoint[0]);
+    std::future<double> raw_seen_flux = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_FLUX, 
+        FERMILAB_ALPHA, fermilabPaperPoint[0]);
+    double paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string writeText = "Paper values: (alpha = " + std::to_string((int)FERMILAB_ALPHA) + ", lMax = " + sciNot(fermilabPaperPoint[0]) + " ergs/s)\n" +
-        "\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]) * paperScale / FLUX_EXCESS) + "\n";
-
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+            paperScale) +
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+            paperScale) +
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+            paperScale / FLUX_EXCESS) + "\n";
     std::cout << writeText << std::endl;
     std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/record.txt");
     recordFile << writeText;
 
     // Generate unscaled data
@@ -713,9 +666,9 @@ int powerLawAlpha() {
 
     // Write data to an output file
     std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-    totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/total-num.txt");
-    numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/num-seen.txt");
-    lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/lum-seen.txt");
+    totalNumFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/total-num.txt");
+    numSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/num-seen.txt");
+    lumSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law-alpha/lum-seen.txt");
     for (int x = 0; x < totalNum.size(); x++) {
         for (int y = 0; y < totalNum[x].size(); y++) {
             double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -729,29 +682,60 @@ int powerLawAlpha() {
     }
 
     std::cout << "Done." << std::endl;
-    system("python \"" ROOT "luminosity-models-position/graph-power-law-alpha.py\"");
+    system("python \"" ROOT "luminosity-models-smoothing/graph-power-law-alpha.py\"");
     std::cin.get();
     return 1;
 }
 
 int logNormal() {
     std::cout << "Using a log normal luminosity function" << std::endl << std::endl;
-    double paperScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, logNormalPaperPoint[0], logNormalPaperPoint[1]);;
-    std::string paperText = "Paper values: (l0 = " + sciNot(logNormalPaperPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPaperPoint[1]) + ")\n"
-        + "\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, logNormalPaperPoint[0], logNormalPaperPoint[1]) * paperScale)
-        + "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, logNormalPaperPoint[0], logNormalPaperPoint[1]) * paperScale)
-        + "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, logNormalPaperPoint[0], logNormalPaperPoint[1]) * paperScale / FLUX_EXCESS) + "\n";
 
-    double ploegScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, logNormalPloegPoint[0], logNormalPloegPoint[1]);
-    std::string ploegText = "Ploeg values: (l0 = " + sciNot(logNormalPloegPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPloegPoint[1]) + ")\n"
-        + "\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, logNormalPloegPoint[0], logNormalPloegPoint[1]) * ploegScale)
-        + "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, logNormalPloegPoint[0], logNormalPloegPoint[1]) * ploegScale)
-        + "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, logNormalPloegPoint[0], logNormalPloegPoint[1]) * ploegScale / FLUX_EXCESS) + "\n";
+    std::future<double> raw_total_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_FLUX,
+        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+    std::future<double> raw_total_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::TOTAL_NUM, 
+        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+    std::future<double> raw_seen_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_NUM, 
+        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+    std::future<double> raw_seen_flux = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_FLUX, 
+        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+    double paperScale = FLUX_EXCESS / raw_total_flux.get();
+    std::string paperText = "Paper values: (l0 = " + sciNot(logNormalPaperPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPaperPoint[1]) + ")\n" +
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+            paperScale) +
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+            paperScale) +
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+            paperScale / FLUX_EXCESS) + "\n";
+    
+    raw_total_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_FLUX,
+        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+    raw_total_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::TOTAL_NUM, 
+        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+    raw_seen_num = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_NUM, 
+        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+    raw_seen_flux = std::async(std::launch::async, 
+        &getValueAtConfig, VALUE::SEEN_FLUX, 
+        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+    double paperScale = FLUX_EXCESS / raw_total_flux.get();
+    std::string ploegText = "Ploeg values: (l0 = " + sciNot(logNormalPloegPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPloegPoint[1]) + ")\n" +
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+            paperScale) +
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+            paperScale) +
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+            paperScale / FLUX_EXCESS) + "\n";
 
     std::cout << paperText << std::endl;
     std::cout << ploegText << std::endl;
     std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/record.txt");
     recordFile << paperText << std::endl;
     recordFile << ploegText << std::endl;
 
@@ -782,9 +766,9 @@ int logNormal() {
 
     // Write data to an output file
     std::ofstream totalNumFile, numSeenFile, lumSeenFile;
-    totalNumFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/total-num.txt");
-    numSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/num-seen.txt");
-    lumSeenFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/lum-seen.txt");
+    totalNumFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/total-num.txt");
+    numSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/num-seen.txt");
+    lumSeenFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/lum-seen.txt");
     for (int x = 0; x < totalNum.size(); x++) {
         for (int y = 0; y < totalNum[x].size(); y++) {
             double scale = FLUX_EXCESS / totalFlux[x][y];
@@ -798,7 +782,7 @@ int logNormal() {
     }
 
     std::cout << "Done." << std::endl;
-    system("python \"" ROOT "luminosity-models-position/graph-log-normal.py\"");
+    system("python \"" ROOT "luminosity-models-smoothing/graph-log-normal.py\"");
     std::cin.get();
     return 1;
 }
@@ -823,7 +807,7 @@ int ploeg() {
 
     std::cout << ploegText << std::endl;
     std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/record.txt");
     recordFile << ploegText << std::endl;
 
     std::cin.get();
@@ -839,7 +823,7 @@ int nptf() {
     std::future<double> totalFlux = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
     std::future<double> totalNum = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_NUM, -0.66, 18.2);
     std::future<double> seenFlux = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_FLUX, -0.66, 18.2);
-    std::future<double> seenNum = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);    
+    std::future<double> seenNum = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);
 
     double nptfScale = FLUX_EXCESS / totalFlux.get();
     double totalNumScaled = totalNum.get() * nptfScale;
@@ -872,7 +856,7 @@ int nptf() {
         + "\n\tFraction of seen luminosity: " + sciNot(fracFluxScaled) + "\n";
 
     std::cout << nptfText << std::endl; std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/record.txt");
     recordFile << nptfText << std::endl;
 
     std::cin.get();
@@ -910,16 +894,18 @@ int hist() {
         fluxWidths[i] = high - low;
     }
 
-    std::array<double, FLUX_HIST_BINS> probs;
+    std::array<double, (int)FLUX_HIST_BINS> probs;
     probs.fill(0);
 
     for (int x = 0; x < thresholds.skyShape.first; x++) {
         //std::cout << x << '/' << skyMap->size() << std::endl;
         for (int y = 0; y < thresholds.skyShape.second; y++) {
             CoordPair latLon = thresholds.indexToLatLon({ x, y });
-            if (myAbs(latLon.first) > 2 * pi / 180) {// Cut out 2 degrees around the equator on each side.
-                std::array<double, FLUX_HIST_BINS> probs_here = getHistAtLatLon(latLon, thresholds.getFluxThreshold(latLon));
-                addArrays(probs, probs_here);
+            if (myAbs(latLon.first) > 2 * PI / 180) {// Cut out 2 degrees around the equator on each side.
+                std::array<double, (int)FLUX_HIST_BINS> probs_here = getHistAtLatLon(latLon, thresholds.getFluxThreshold(latLon));
+                for (int i = 0; i < probs_here.size(); i++) {
+                    probs[i] += probs_here[i];
+                }
             }
         }
     }
@@ -954,19 +940,19 @@ int hist() {
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/flux-hist.txt");
+        histFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/flux-hist.txt");
         histFile << "alpha = " << ALPHA_HIST << ", L_min = " << L_MIN_HIST << ", L_max = " << L_MAX_HIST << std::endl;
         break;
     case LUMINOSITY_FUNCTION::LOG_NORMAL:
-        histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/flux-hist.txt");
+        histFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/flux-hist.txt");
         histFile << "L0 = " << L0_HIST << ", sigma = " << SIGMA_HIST << std::endl;
         break;
     case LUMINOSITY_FUNCTION::PLOEG:
-        histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/flux-hist.txt");
+        histFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/flux-hist.txt");
         histFile << "L0 = " << L0_PLOEG_HIST << ", sigma = " << SIGMA_PLOEG_HIST << std::endl;
         break;
     case LUMINOSITY_FUNCTION::NPTF:
-        histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/flux-hist.txt");
+        histFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/flux-hist.txt");
         histFile << "L_break = " << NPTF_L_BREAK_HIST << ", n1 = " << NPTF_N_1_HIST << ", n2 = " << NPTF_N_2_HIST << std::endl;
         break;
     }
