@@ -44,9 +44,9 @@ typedef std::vector<std::vector<double>> DoubleVector;
 #define NPTF_N_1_HIST -0.66
 #define NPTF_N_2_HIST 18.2
 
-#define START_FLUX_INTEGRAL 1.0e-25
-#define STOP_FLUX_INTEGRAL 1.0e35
-#define NUM_FLUX_STEPS 1e5
+#define START_FLUX_INTEGRAL 1.0e-12
+#define STOP_FLUX_INTEGRAL 1.0e-8
+#define NUM_FLUX_STEPS 1e3
 
 
 
@@ -234,6 +234,10 @@ double get_lum_func_strip(double arg1, double arg2) {
 }
 
 double sensitivity(double flux, double threshold) {
+    // Need to check for whether the sensitivity should be used or not here.
+    if (threshold == INVALID) {
+        return 1.0;
+    }
     if (flux > threshold) {
         return 1.0;
     }
@@ -246,18 +250,18 @@ double integrate(double threshold, double distance, double arg1, double arg2) {
     double start_flux_integral;
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        start_flux_integral = arg1;
+        start_flux_integral = arg1 / (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
         break;
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        start_flux_integral = L_MIN;
+        start_flux_integral = L_MIN / (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
         break;
     default:
         start_flux_integral = START_FLUX_INTEGRAL;
         break;
     }
-    double step_width = (STOP_FLUX_INTEGRAL - START_FLUX_INTEGRAL) / 
+    double step_width = (STOP_FLUX_INTEGRAL - start_flux_integral) /
         NUM_FLUX_STEPS;
-    for (double flux = START_FLUX_INTEGRAL;
+    for (double flux = start_flux_integral;
         flux < STOP_FLUX_INTEGRAL;
         flux += step_width) {
 
@@ -273,44 +277,49 @@ double lintegrate(double threshold, double distance, double arg1, double arg2) {
     // lMin, lMax; l0, sigma; nBelow, nAbove
     double integral = 0;
     double start_flux_integral;
+    double flux_to_lum = (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        start_flux_integral = arg1;
+        start_flux_integral = arg1 / flux_to_lum;
         break;
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        start_flux_integral = L_MIN;
+        start_flux_integral = L_MIN / flux_to_lum;
         break;
     default:
         start_flux_integral = START_FLUX_INTEGRAL;
         break;
     }
-    double step_width = (STOP_FLUX_INTEGRAL - START_FLUX_INTEGRAL) / 
+    double step_width = (STOP_FLUX_INTEGRAL - start_flux_integral) /
         NUM_FLUX_STEPS;
-    for (double flux = START_FLUX_INTEGRAL;
+    for (double flux = start_flux_integral;
         flux < STOP_FLUX_INTEGRAL;
         flux += step_width) {
 
+        double lum = flux * flux_to_lum;
         double sensitivity_multiplier = sensitivity(flux, threshold);
-        double lum = flux * (4 * PI * distance * distance);
-        integral += lum * sensitivity_multiplier *
-            stripped_lum_func(lum, arg1, arg2);
+        integral += sensitivity_multiplier * stripped_lum_func(lum, arg1, arg2)
+            * lum;
     }
 
-    return integral * step_width * get_lum_func_strip(arg1, arg2);
+    return integral * (step_width * flux_to_lum) *
+        get_lum_func_strip(arg1, arg2);
 }
 
 
 // ================= Declare helper functions =======================
 
-double numSeenFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) number of visible pulsars
+double numSeenFunc(double threshold, double distance, double arg1, double arg2) {
+    // Returns(unscaled) number of visible pulsars
     return integrate(threshold, distance, arg1, arg2);
 }
 
-double fluxSeenFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) amount of luminosity visible
+double fluxSeenFunc(double threshold, double distance, double arg1, double arg2) {
+    // Returns(unscaled) amount of luminosity visible
     return lintegrate(threshold, distance, arg1, arg2);
 }
 
-double totalFluxFunc(double threshold, double distance, double arg1, double arg2) {// Returns(unscaled) total luminosity
+double totalFluxFunc(double threshold, double distance, double arg1, double arg2) {
+    // Returns(unscaled) total luminosity
     return lintegrate(INVALID, distance, arg1, arg2);
 }
 
@@ -330,8 +339,6 @@ double getValueAtLatLon(CoordPair latLon, double fluxThreshold, VALUE value, dou
             - 2 * DIST_TO_CENTER * radialDistance * cosLon * cosLat);
         nfwSquaredValue = pow(distFromCenter / NFW_SCALE_DIST, -GAMMA) * pow(1 + distFromCenter / NFW_SCALE_DIST, -3 + GAMMA);
         nfwSquaredValue = nfwSquaredValue * nfwSquaredValue;
-
-        lThreshold = fluxThreshold * 4 * PI * radialDistance * radialDistance * CM_PER_KPC_SQUARED;
 
         switch (value) {
         case VALUE::TOTAL_NUM:
@@ -419,11 +426,10 @@ void generateValueSkyMap(VALUE value, DoubleVector* skyMap, double arg1, double 
     // The values are scaled relative to each other in the image, but do not produce the correct total luminosity across the entire GCE
     *skyMap = DoubleVector(thresholds.skyShape.first, std::vector<double>(thresholds.skyShape.second, 0));
     for (int x = 0; x < skyMap->size(); x++) {
-        //std::cout << x << '/' << skyMap->size() << std::endl;
+        std::cout << x << '/' << skyMap->size() << std::endl;
         for (int y = 0; y < (*skyMap)[x].size(); y++) {
             CoordPair latLon = thresholds.indexToLatLon({ x, y });
             if (myAbs(latLon.first) > 2 * PI / 180) {// Cut out 2 degrees around the equator on each side.
-                //std::cout << "Evaluating latLon " << latLon.first << " " << latLon.second << std::endl;
                 double val = getValueAtLatLon(latLon, thresholds.getFluxThreshold(latLon), value, arg1, arg2);
                 (*skyMap)[x][y] = val;
             }
@@ -457,14 +463,13 @@ void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
 #ifndef LOTS_OF_THREADS
     for (int i = 0; i < PLOT_SIZE; i++) {
         double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
-        //std::cout << lMin << std::endl;
         for (int j = 0; j < PLOT_SIZE; j++) {
             double lMax = L_MAX_RANGE[0] * pow(powerSteps.second, j);
             (*plotMap)[i][j] = getValueAtConfig(value, lMin, lMax);
         }
     }
 
-#else 
+#else
     for (int i = 0; i < PLOT_SIZE; i++) {
         double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
         std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
@@ -499,7 +504,7 @@ void generatePowerLawAlphaPlotMap(VALUE value, DoubleVector* plotMap) {
         }
     }
 
-#else 
+#else
     std::cout << "Unimplemented" << std::endk;
     throw "Unimplemented";
 #endif
@@ -521,7 +526,7 @@ void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
         }
     }
 
-#else 
+#else
     for (int i = 0; i < PLOT_SIZE; i++) {
         double l0 = L0_RANGE[0] * pow(powerSteps.first, i);
         std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
@@ -542,30 +547,47 @@ void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
 // ========================= Generate data =========================
 int powerLaw() {
     std::cout << "Using a power law luminosity function" << std::endl << std::endl;
-    std::future<double> raw_total_flux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, fermilabPaperPoint[1], fermilabPaperPoint[0]);
-    std::future<double> raw_total_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::TOTAL_NUM, 
+    std::future<double> raw_total_flux = std::async(std::launch::async,
+        getValueAtConfig, VALUE::TOTAL_FLUX,
         fermilabPaperPoint[1], fermilabPaperPoint[0]);
-    std::future<double> raw_seen_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_NUM, 
+    std::future<double> raw_total_num = std::async(std::launch::async,
+        getValueAtConfig, VALUE::TOTAL_NUM,
         fermilabPaperPoint[1], fermilabPaperPoint[0]);
-    std::future<double> raw_seen_flux = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_FLUX, 
+    std::future<double> raw_seen_num = std::async(std::launch::async,
+        getValueAtConfig, VALUE::SEEN_NUM,
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_seen_flux = std::async(std::launch::async,
+        getValueAtConfig, VALUE::SEEN_FLUX,
         fermilabPaperPoint[1], fermilabPaperPoint[0]);
     double paperScale = FLUX_EXCESS / raw_total_flux.get();
+
+
+
+    /*std::future<double> raw_total_num = std::async(std::launch::async,
+        getValueAtConfig, VALUE::TOTAL_NUM,
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_seen_num = std::async(std::launch::async,
+        getValueAtConfig, VALUE::SEEN_NUM,
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);
+    std::future<double> raw_seen_flux = std::async(std::launch::async,
+        getValueAtConfig, VALUE::SEEN_FLUX,
+        fermilabPaperPoint[1], fermilabPaperPoint[0]);*/
+
+
+
     std::string writeText = "Paper values: (lMin = " + sciNot(fermilabPaperPoint[1]) + " ergs/s, lMax = " + sciNot(fermilabPaperPoint[0]) + " ergs/s)\n" +
-        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
             paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() *
             paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
             paperScale / FLUX_EXCESS) + "\n";
-    std::cout << paperScale << std::endl;
+    std::cout << "Scale: " <<  paperScale << std::endl;
     std::cout << writeText << std::endl;
     std::ofstream recordFile;
     recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/record.txt");
     recordFile << writeText;
-
+    /*
     // Generate unscaled data
     DoubleVector totalNum, numSeen, fluxSeen, totalFlux;
 
@@ -610,29 +632,29 @@ int powerLaw() {
 
     std::cout << "Done." << std::endl;
     system("python \"" ROOT "luminosity-models-smoothing/graph-power-law.py\"");
-    std::cin.get();
+    std::cin.get();*/
     return 1;
 }
 
 int powerLawAlpha() {
     std::cout << "Using a power law alpha luminosity function" << std::endl << std::endl;
     std::future<double> raw_total_flux = std::async(std::launch::async, &getValueAtConfig, VALUE::TOTAL_FLUX, FERMILAB_ALPHA, fermilabPaperPoint[0]);
-    std::future<double> raw_total_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::TOTAL_NUM, 
+    std::future<double> raw_total_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_NUM,
         FERMILAB_ALPHA, fermilabPaperPoint[0]);
-    std::future<double> raw_seen_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_NUM, 
+    std::future<double> raw_seen_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_NUM,
         FERMILAB_ALPHA, fermilabPaperPoint[0]);
-    std::future<double> raw_seen_flux = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_FLUX, 
+    std::future<double> raw_seen_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_FLUX,
         FERMILAB_ALPHA, fermilabPaperPoint[0]);
     double paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string writeText = "Paper values: (alpha = " + std::to_string((int)FERMILAB_ALPHA) + ", lMax = " + sciNot(fermilabPaperPoint[0]) + " ergs/s)\n" +
-        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
             paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() *
             paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
             paperScale / FLUX_EXCESS) + "\n";
     std::cout << writeText << std::endl;
     std::ofstream recordFile;
@@ -693,43 +715,43 @@ int logNormal() {
     std::future<double> raw_total_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_FLUX,
         logNormalPaperPoint[1], logNormalPaperPoint[0]);
-    std::future<double> raw_total_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::TOTAL_NUM, 
+    std::future<double> raw_total_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_NUM,
         logNormalPaperPoint[1], logNormalPaperPoint[0]);
-    std::future<double> raw_seen_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_NUM, 
+    std::future<double> raw_seen_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_NUM,
         logNormalPaperPoint[1], logNormalPaperPoint[0]);
-    std::future<double> raw_seen_flux = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_FLUX, 
+    std::future<double> raw_seen_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_FLUX,
         logNormalPaperPoint[1], logNormalPaperPoint[0]);
     double paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string paperText = "Paper values: (l0 = " + sciNot(logNormalPaperPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPaperPoint[1]) + ")\n" +
-        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
             paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() *
             paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
             paperScale / FLUX_EXCESS) + "\n";
-    
+
     raw_total_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_FLUX,
         logNormalPloegPoint[1], logNormalPloegPoint[0]);
-    raw_total_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::TOTAL_NUM, 
+    raw_total_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_NUM,
         logNormalPloegPoint[1], logNormalPloegPoint[0]);
-    raw_seen_num = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_NUM, 
+    raw_seen_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_NUM,
         logNormalPloegPoint[1], logNormalPloegPoint[0]);
-    raw_seen_flux = std::async(std::launch::async, 
-        &getValueAtConfig, VALUE::SEEN_FLUX, 
+    raw_seen_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_FLUX,
         logNormalPloegPoint[1], logNormalPloegPoint[0]);
-    double paperScale = FLUX_EXCESS / raw_total_flux.get();
+    paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string ploegText = "Ploeg values: (l0 = " + sciNot(logNormalPloegPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPloegPoint[1]) + ")\n" +
-        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() * 
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
             paperScale) +
-        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() * 
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() *
             paperScale) +
-        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() * 
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
             paperScale / FLUX_EXCESS) + "\n";
 
     std::cout << paperText << std::endl;
@@ -927,8 +949,6 @@ int hist() {
         scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, NPTF_N_1_HIST, NPTF_N_2_HIST);
         break;
     };
-
-    std::cout << scale << std::endl;
 
 
     for (double& prob : probs) {

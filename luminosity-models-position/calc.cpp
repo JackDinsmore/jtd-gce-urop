@@ -615,8 +615,11 @@ int powerLaw() {
     std::cout << paperScale << std::endl;
     std::cout << writeText << std::endl;
     std::ofstream recordFile;
+
     recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/power-law/record.txt");
     recordFile << writeText;
+
+    recordFile.close();
 
     // Generate unscaled data
     DoubleVector totalNum, numSeen, fluxSeen, totalFlux;

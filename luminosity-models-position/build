@@ -1,0 +1,1 @@
+/usr/bin/g++ -pthread -g calc.cpp -o "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/calc"

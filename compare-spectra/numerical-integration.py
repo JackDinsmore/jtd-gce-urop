@@ -4,10 +4,11 @@ from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.transforms as mtrans
 
-plt.style.use("latex")
+plt.style.use("jcap")
 
 SPECTRUM_RANGE = [0.5, 10]# GeV
 NUM_PLOTS = 7
+SHAPES=['o', 's', '^', '*', 'd', '+', 'x']
 
 fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(10, 6), sharex='col', sharey='row')
 
@@ -39,10 +40,10 @@ for i in range(0, NUM_PLOTS):
     ax = axes[i%3][i//3]
     f = ps.Spectrum(i)
     names.append(f.get_name())
-    f.display_data(allax, color="C"+str(i))
+    f.display_data(allax, color="C"+str(i), shape=SHAPES[i])
     f.display_data(ax)
     f.display_calore(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
-    f.display_power_law(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
+    #f.display_power_law(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     numerical_flux = f.get_numerical_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     calore_flux = f.get_calore_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     fit_flux = f.get_power_law_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
@@ -57,7 +58,7 @@ for i in range(0, NUM_PLOTS):
     f.label_axes(allax)
 
     print(f.get_name(), numerical_flux)
-    
+
     ax.annotate("Num: {}\nCalore: {}\nFit: {}".format(sciNot(numerical_flux), sciNot(calore_flux), sciNot(fit_flux)), (0.2, 0.1), xycoords='axes fraction')
 
 
@@ -68,29 +69,32 @@ fig.delaxes(axes[1][2])
 
 while None in fit_fluxes:
     index = fit_fluxes.index(None)
-    del fit_fluxes[index]
-    del calore_fluxes[index]
-    del num_fluxes[index]
-    del names[index]
+    fit_fluxes[index] = 0
+    #del fit_fluxes[index]
+    #del calore_fluxes[index]
+    #del num_fluxes[index]
+    #del names[index]
 
 while None in num_fluxes:
     index = num_fluxes.index(None)
-    del fit_fluxes[index]
-    del calore_fluxes[index]
-    del num_fluxes[index]
-    del names[index]
+    num_fluxes[index] = 0
+    #del fit_fluxes[index]
+    #del calore_fluxes[index]
+    #del num_fluxes[index]
+    #del names[index]
 
 x = np.arange(len(fit_fluxes))
 width = 0.25
 hist_fig, hist_ax = plt.subplots()
 hist_ax.bar(x, num_fluxes, width, label="Numerical")
-hist_ax.bar(x + width, calore_fluxes, width, label="Calore")
-hist_ax.bar(x + 2 * width, fit_fluxes, width, label="Power law")
+hist_ax.bar(x + width, calore_fluxes, width, label="Calore", hatch='////', linewidth=0.5)
+hist_ax.bar(x + 2 * width, fit_fluxes, width, label="Power law", hatch='\\\\\\\\', linewidth=0.5)
 hist_ax.legend()
 hist_ax.set_ylabel(f.get_y_label())
 hist_ax.set_xticks(x + width)
-hist_ax.set_xticklabels(names)
-hist_fig.savefig("integral-hist.png")
+hist_ax.set_xticklabels(names, rotation=30)
+hist_fig.tight_layout()
+hist_fig.savefig("integral-hist.pdf")
 
 
 
@@ -99,13 +103,13 @@ power_law_fit = mlines.Line2D([], [], color='C2', linestyle='--', label='Power l
 fig.legend(handles=[calore_fit, power_law_fit], loc='lower right')
 
 
-allfig.legend()
+allax.legend()
 allax.set_title("")
 
 fig.tight_layout()
 allfig.tight_layout()
 
 
-fig.savefig("summary.png")
-allfig.savefig("all-spectra.png")
+fig.savefig("summary.pdf")
+allfig.savefig("all-spectra.pdf")
 plt.show()

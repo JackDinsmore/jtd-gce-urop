@@ -1,0 +1,8 @@
+lum-funcs.pdf plot-functions/lum-funcs.pdf
+l-lum-funcs.pdf plot-functions/l-lum-funcs.pdf
+
+sensitivity-map.pdf sensitivity/flux-thresholds.pdf
+
+di-mauro-example.pdf compare-spectra/example.pdf
+total-flux-bars.pdf compare-spectra/integral-hist.pdf
+all-spectra.pdf compare-spectra/all-spectra.pdf

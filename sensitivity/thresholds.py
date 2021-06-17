@@ -8,15 +8,14 @@
 # https://arxiv.org/pdf/1911.12369.pdf
 
 import numpy as np
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from astropy.utils.data import download_file
 from astropy.io import fits
 from math import pi, cos, sqrt
 
-matplotlib.font_manager.FontManager()
-plt.style.use('latex')
+plt.style.use('jcap')
 
 DIST_TO_CENTER = 8.5
 KAPPA = 0.5 # dist to center / r_s
@@ -68,16 +67,16 @@ for x in range(len(image_data)):
 trimmed_flux_data = np.asarray(trimmed_flux_data)
 trimmed_lum_data = np.asarray(trimmed_lum_data)
 
+#plt.figure(figsize=(8, 6))
+#mpl.rcParams["font.size"]=12
 
 # Display flux data:
-plt.figure()
 c = plt.imshow(trimmed_flux_data, 
                    norm=colors.LogNorm(vmin=np.nanmin(trimmed_flux_data),
                    vmax=np.nanpercentile(trimmed_flux_data, 99)))
 cbar = plt.colorbar(c)
-cbar.set_label("$F_{th}(b, \\ell)$ (erg/cm$^2$/s)")
+cbar.set_label("$F_\\textrm{th}(b, \\ell)$ (erg/cm$^2$/s)")
 
-plt.title("Fermi LAT flux sensitivity (0.1-100 GeV)")
 xPositions = np.arange(0, trimmed_flux_data.shape[1], trimmed_flux_data.shape[1]//NUM_X_LABELS) # pixel count at label position
 xLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_X_LABELS+1) # labels you want to see
 np.append(xPositions, trimmed_flux_data.shape[1])
@@ -90,7 +89,7 @@ plt.yticks(yPositions, [int(i) for i in yLabels])
 plt.xlabel("$\\ell$ (deg)")
 plt.ylabel("$b$ (deg)")
 plt.tight_layout()
-plt.savefig("flux-thresholds.png")
+plt.savefig("flux-thresholds.pdf")
 
 # Cut luminosity data
 '''for x in range(len(trimmed_lum_data)):

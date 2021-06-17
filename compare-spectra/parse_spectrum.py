@@ -66,14 +66,14 @@ class Spectrum:
             self.pointsy /= LARGE_ROI_FACTOR
             self.up_barsy /= LARGE_ROI_FACTOR
             self.down_barsy /= LARGE_ROI_FACTOR
-        
+
         self.id = id
         self.calore_norm = None
         self.fit_norm = None
         self.fit_alpha_below = None
         self.fit_alpha_above = None
         self.fit_l_break = None
-    
+
     def get_name(self):
         if self.id == FERMILAB_GNFW:
             return "Fermilab gNFW"
@@ -103,7 +103,7 @@ class Spectrum:
             yres.append(10**float(y) * ERGS_PER_GEV)
         f.close()
         return np.asarray(xres), np.asarray(yres) * ROI_SIZE
-    
+
     def _get_point(self, logx, datax, datay):
         i = 0
         if logx < datax[0] or logx > datax[-1]:
@@ -169,7 +169,7 @@ class Spectrum:
         self._fit_calore(l_min, l_max)
         ergs_l_min = l_min * ERGS_PER_GEV
         ergs_l_max = l_max * ERGS_PER_GEV
-        return self.calore_norm * (CALORE_L_BREAK**CALORE_ALPHA_BELOW / (CALORE_ALPHA_BELOW - 2) * (ergs_l_min**(2 - CALORE_ALPHA_BELOW) - CALORE_L_BREAK**(2 - CALORE_ALPHA_BELOW)) + 
+        return self.calore_norm * (CALORE_L_BREAK**CALORE_ALPHA_BELOW / (CALORE_ALPHA_BELOW - 2) * (ergs_l_min**(2 - CALORE_ALPHA_BELOW) - CALORE_L_BREAK**(2 - CALORE_ALPHA_BELOW)) +
                             CALORE_L_BREAK**CALORE_ALPHA_ABOVE / (CALORE_ALPHA_ABOVE - 2) * (CALORE_L_BREAK**(2 - CALORE_ALPHA_ABOVE) - ergs_l_max**(2 - CALORE_ALPHA_ABOVE)))
 
     def get_power_law_flux(self, l_min, l_max):
@@ -178,7 +178,7 @@ class Spectrum:
             return None
         ergs_l_min = l_min * ERGS_PER_GEV
         ergs_l_max = l_max * ERGS_PER_GEV
-        return self.fit_norm * (self.fit_l_break**self.fit_alpha_below / (self.fit_alpha_below - 2) * (ergs_l_min**(2 - self.fit_alpha_below) - self.fit_l_break**(2 - self.fit_alpha_below)) + 
+        return self.fit_norm * (self.fit_l_break**self.fit_alpha_below / (self.fit_alpha_below - 2) * (ergs_l_min**(2 - self.fit_alpha_below) - self.fit_l_break**(2 - self.fit_alpha_below)) +
                             self.fit_l_break**self.fit_alpha_above / (self.fit_alpha_above - 2) * (self.fit_l_break**(2 - self.fit_alpha_above) - ergs_l_max**(2 - self.fit_alpha_above)))
 
     def get_numerical_flux(self, l_min, l_max):
@@ -195,17 +195,17 @@ class Spectrum:
         i = 0
         while self.pointsx[i] < log_min:
             i += 1
-        
+
         integral += 0.5 * (self.pointsy[i] + self.get_point_log(log_min)) * (self.pointsx[i] - log_min)
         while self.pointsx[i+1] < log_max:
             integral += 0.5 * (self.pointsy[i+1] + self.pointsy[i]) * (self.pointsx[i+1] - self.pointsx[i])
             i += 1
-        
+
         integral += 0.5 * (self.get_point_log(log_max) + self.pointsy[i]) * (log_max - self.pointsx[i])
 
         return integral * np.log(10)
 
-    def display_data(self, ax, color='k'):
+    def y_data(self, ax, color='k'):
         ax.plot(self.pointsx, self.pointsy, color=color, label=self.get_name())
         thisx = []
         thisy = []
@@ -228,24 +228,53 @@ class Spectrum:
         ax.set_xlabel(self.get_x_label())
         ax.set_ylabel(self.get_y_label())
 
-    def display_calore(self, ax, l_min, l_max):
+    def display_data(self, ax, color='k', shape='o'):
+        ax.scatter(self.pointsx, self.pointsy, color=color,
+            label=self.get_name(), marker=shape)
+        thisx = []
+        thisy = []
+        up_err = []
+        down_err = []
+        for x in self.pointsx:
+            y = self.get_point_log(x)
+            u = self.get_up_bar_log(x)
+            d = self.get_down_bar_log(x)
+            if u is not None and d is not None:
+                thisx.append(x)
+                thisy.append(y)
+                up_err.append(u-y)
+                down_err.append(y-d)
+        ax.errorbar(thisx, thisy, yerr=[up_err, down_err], color=color,
+            linestyle='none')
+        ax.set_title(self.get_name())
+        ax.set_yscale("log")
+
+    def display_calore(self, ax, l_min, l_max, show_all=False):
         self._fit_calore(np.log10(l_min), np.log10(l_max))
 
-        calorex = np.linspace(np.log10(l_min * ERGS_PER_GEV), np.log10(l_max * ERGS_PER_GEV), 100)
+        if not show_all:
+            calorex = np.linspace(np.log10(l_min * ERGS_PER_GEV),
+                np.log10(l_max * ERGS_PER_GEV), 100)
+        else:
+            calorex = np.linspace(np.min(self.pointsx),
+                np.max(self.pointsx), 100)
         calorey = calore_power_law(calorex, self.calore_norm)
-        
+
         ax.plot(calorex, calorey, color='C1', linestyle='--')
 
-    def display_power_law(self, ax, l_min, l_max):
+    def display_power_law(self, ax, l_min, l_max, show_all=False):
         self._fit_power_law(l_min, l_max)
 
-        if self.fit_norm < 1:
-            return
+        if not show_all:
+            fitx = np.linspace(np.log10(l_min * ERGS_PER_GEV),
+                np.log10(l_max * ERGS_PER_GEV), 100)
+        else:
+            fitx = np.linspace(np.min(self.pointsx),
+                np.max(self.pointsx), 100)
+        fity = power_law(fitx, self.fit_norm, self.fit_alpha_below,
+            self.fit_alpha_above, self.fit_l_break) / LM_FIT_SCALE
 
-        fitx = np.linspace(np.log10(l_min * ERGS_PER_GEV), np.log10(l_max * ERGS_PER_GEV), 100)
-        fity = power_law(fitx, self.fit_norm, self.fit_alpha_below, self.fit_alpha_above, self.fit_l_break) / LM_FIT_SCALE
-        
-        ax.plot(fitx, fity, color='C2', linestyle='--')
+        ax.plot(fitx, fity, color='C2', linestyle='-.')
 
     def get_x_label(self):
         return "$\log \\frac{E}{1\\ \\mathrm{erg}}$"
