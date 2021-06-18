@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib.lines import Line2D
 
-plt.style.use('revtex-presentation')
+plt.style.use('jcap')
 
 
 PLOT_SIZE = 50
@@ -19,7 +19,7 @@ lOPowerStep = (L_0_RANGE[1] / L_0_RANGE[0]) ** (1.0 / PLOT_SIZE)
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
-TOTAL_FLUX = 7.494712733226778e-10
+TOTAL_FLUX = 1.2953417255755896e-09#7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR = "C1"
@@ -28,7 +28,8 @@ DRAW_PLOEG_POINT = True
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/log-normal/"
+PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-"\
+ + str(MULTIPLIER) + "x/log-normal/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -100,20 +101,20 @@ c1 = plt.contourf(xVals, yVals, totalNum,
                    vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
 
 cbar = plt.colorbar(c1, extend='max')
-cbar.set_label("$N$")
+cbar.set_label("$N_\\textrm{GCE}$")
 
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(xVals, yVals, numSeen, [10*i for i in range(1, 10)], 
-        colors=[(0, i/10.0, 0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2)
+    plt.contour(xVals, yVals, numSeen, [10*i for i in range(1, 10)],
+        colors=[(0, i/10.0, 0, 1) for i in range(1, 10)])
+plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR])
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(xVals, yVals, lumSeen, [0.5 * i for i in range(1, 10)], 
-        colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)], linewidths=1)
-plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2)
+    plt.contour(xVals, yVals, lumSeen, [0.5 * i for i in range(1, 10)],
+        colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)])
+plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
 plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^')
 #plt.scatter(minPoint[0], minPoint[1], c='cyan')
@@ -123,16 +124,16 @@ shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
 shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
 
-# Final points 
+# Final points
 
 if DRAW_PLOEG_POINT:
     plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
 
-custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2)),
+custom_lines = [Line2D([0], [0], color=LINE_COLOR),
+                Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
                 Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
                 Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
-plt.legend(custom_lines, ['Number constraint', 'fraction constraint', "Globular cluster point", "Ploeg point"], loc="lower left")
+plt.legend(custom_lines, ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "Globular clusters", "GCE"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 
@@ -142,7 +143,6 @@ plt.tight_layout()
 if(DRAW_EXTRA_CONTOURS):
     plt.savefig(PATH_TO_FILE+"overlay-extra.png")
 if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE+"log-normal-step-x" + str(MULTIPLIER) + ".png")
-    plt.savefig("C:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/log-normal/log-normal-pos-x" + str(MULTIPLIER) + ".png")
+    plt.savefig("log-normal-pos-x" + str(MULTIPLIER) + ".pdf")
 
 plt.show()

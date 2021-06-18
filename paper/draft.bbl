@@ -1,10 +1,47 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{Abazajian:2014fta}
 Kevork~N. Abazajian, Nicolas Canac, Shunsaku Horiuchi, and Manoj Kaplinghat.
 \newblock {Astrophysical and Dark Matter Interpretations of Extended Gamma-Ray
   Emission from the Galactic Center}.
 \newblock {\em Phys. Rev. D}, 90(2):023526, 2014.
+
+\bibitem{Abdollahi_2020}
+S.~Abdollahi, F.~Acero, M.~Ackermann, M.~Ajello, W.~B. Atwood, M.~Axelsson,
+  L.~Baldini, J.~Ballet, G.~Barbiellini, D.~Bastieri, J.~Becerra Gonzalez,
+  R.~Bellazzini, A.~Berretta, E.~Bissaldi, R.~D. Blandford, E.~D. Bloom,
+  R.~Bonino, E.~Bottacini, T.~J. Brandt, J.~Bregeon, P.~Bruel, R.~Buehler,
+  T.~H. Burnett, S.~Buson, R.~A. Cameron, R.~Caputo, P.~A. Caraveo, J.~M.
+  Casandjian, D.~Castro, E.~Cavazzuti, E.~Charles, S.~Chaty, S.~Chen, C.~C.
+  Cheung, G.~Chiaro, S.~Ciprini, J.~Cohen-Tanugi, L.~R. Cominsky,
+  J.~Coronado-Bl{\'{a}}zquez, D.~Costantin, A.~Cuoco, S.~Cutini, F.~D'Ammando,
+  M.~DeKlotz, P.~de~la Torre~Luque, F.~de~Palma, A.~Desai, S.~W. Digel, N.~Di
+  Lalla, M.~Di Mauro, L.~Di Venere, A.~Dom{\'{\i}}nguez, D.~Dumora, F.~Fana
+  Dirirsa, S.~J. Fegan, E.~C. Ferrara, A.~Franckowiak, Y.~Fukazawa, S.~Funk,
+  P.~Fusco, F.~Gargano, D.~Gasparrini, N.~Giglietto, P.~Giommi, F.~Giordano,
+  M.~Giroletti, T.~Glanzman, D.~Green, I.~A. Grenier, S.~Griffin, M.-H.
+  Grondin, J.~E. Grove, S.~Guiriec, A.~K. Harding, K.~Hayashi, E.~Hays, J.~W.
+  Hewitt, D.~Horan, G.~J{\'{o}}hannesson, T.~J. Johnson, T.~Kamae, M.~Kerr,
+  D.~Kocevski, M.~Kovac'evic', M.~Kuss, D.~Landriu, S.~Larsson, L.~Latronico,
+  M.~Lemoine-Goumard, J.~Li, I.~Liodakis, F.~Longo, F.~Loparco, B.~Lott, M.~N.
+  Lovellette, P.~Lubrano, G.~M. Madejski, S.~Maldera, D.~Malyshev, A.~Manfreda,
+  E.~J. Marchesini, L.~Marcotulli, G.~Mart{\'{\i}}-Devesa, P.~Martin,
+  F.~Massaro, M.~N. Mazziotta, J.~E. McEnery, I.~Mereu, M.~Meyer, P.~F.
+  Michelson, N.~Mirabal, T.~Mizuno, M.~E. Monzani, A.~Morselli, I.~V.
+  Moskalenko, M.~Negro, E.~Nuss, R.~Ojha, N.~Omodei, M.~Orienti, E.~Orlando,
+  J.~F. Ormes, M.~Palatiello, V.~S. Paliya, D.~Paneque, Z.~Pei,
+  H.~Pe{\~{n}}a-Herazo, J.~S. Perkins, M.~Persic, M.~Pesce-Rollins,
+  V.~Petrosian, L.~Petrov, F.~Piron, H.~Poon, T.~A. Porter, G.~Principe,
+  S.~Rain{\`{o}}, R.~Rando, M.~Razzano, S.~Razzaque, A.~Reimer, O.~Reimer,
+  Q.~Remy, T.~Reposeur, R.~W. Romani, P.~M.~Saz Parkinson, F.~K. Schinzel,
+  D.~Serini, C.~Sgr{\`{o}}, E.~J. Siskind, D.~A. Smith, G.~Spandre,
+  P.~Spinelli, A.~W. Strong, D.~J. Suson, H.~Tajima, M.~N. Takahashi, D.~Tak,
+  J.~B. Thayer, D.~J. Thompson, L.~Tibaldo, D.~F. Torres, E.~Torresi,
+  J.~Valverde, B.~Van Klaveren, P.~van Zyl, K.~Wood, M.~Yassine, and
+  G.~Zaharijas.
+\newblock Fermi large area telescope fourth source catalog.
+\newblock {\em The Astrophysical Journal Supplement Series}, 247(1):33, mar
+  2020.
 
 \bibitem{Fermi-LAT:2019yla}
 S.~Abdollahi et~al.
@@ -26,6 +63,12 @@ Mattia Di~Mauro.
 \newblock {Characteristics of the Galactic Center excess measured with 11 years
   of $Fermi$-LAT data}.
 \newblock {\em Phys. Rev. D}, 103(6):063029, 2021.
+
+\bibitem{Hobbs04}
+G.~{Hobbs}, R.~{Manchester}, A.~{Teoh}, and M.~{Hobbs}.
+\newblock {The ATNF Pulsar Catalog}.
+\newblock In Fernando {Camilo} and Bryan~M. {Gaensler}, editors, {\em Young
+  Neutron Stars and Their Environments}, volume 218, page 139, January 2004.
 
 \bibitem{osti_1305131}
 Dan Hooper and Tim Linden.

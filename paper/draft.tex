@@ -6,6 +6,7 @@
                      % see the JCAP-author-manual
 \usepackage{siunitx}
 \usepackage[T1]{fontenc} % if needed
+\usepackage{subcaption}
 
 
 \title{\boldmath A title with some math: $x=1$}
@@ -53,7 +54,21 @@
 
 
 \subsection{Observables}
-To fit the luminosity functions described in section \ref{sec:lum-funcs}, we will use three observables: the total flux of the GCE $F_\text{GCE}$, the ratio of the total flux to the flux visible from point sources resolved by \textit{Fermi} $R_\text{r}$, and the number of resolved point sources $N_\text{r}$. We fix the first observable at $F_\text{GCE}= \SI{1.295e-09}{\erg\per\second}$ according to the methods outlined in section \ref{sec:total-lum}. We allow the other two observables to vary as functions of the parameters of the luminosity functions.
+\label{sec:observables}
+To fit the luminosity functions described in section \ref{sec:lum-funcs}, we will use three observables: the total flux of the GCE $F_\text{GCE}$, the ratio of the total flux to the flux visible from point sources resolved by \textit{Fermi} $R_\text{r}$, and the number of resolved point sources $N_\text{r}$. All of these observables will be made with reference to a region of interest (ROI) defined by $|\ell| < 20^\circ$ and $2^\circ < |b| < 20^\circ$, and we will restrict the GCE spectrum to $\SI{0.1}{\giga\electronvolt} < E_\gamma < \SI{100}{\giga\electronvolt}$.
+
+The other two observables have been studied by \comment{Some technical name for the Fermilab team.} \cite{Zhong:2019ycb}. The authors performed a template fit to data from Fermi-LAT to isolate spacial peaks in flux, finding 110 \comment{(I got 110; their paper says 107)} peaks within 0.3$^\circ$ of a source in the 4FGL catalog within the region of interest \cite{Abdollahi_2020}. Of these 110 sources, they exclude all that are listed in the 4FGL catalog as not associated with pulsars. Of those that are known to be pulsars, they exclude all whose positions are known not to be within 2 kpc of the GC via the ATNF Pulsar Catalog \cite{Hobbs04}. This leaves 47 point sources in the 4FGL catalog whose origins are either known to be pulsars in the GC or are unknown. We will therefore set $N_\text{r} = 47$ for this paper. If the allowed distance between a flux peak and a 4FGL source is extended from 0.3$^\circ$ to $0.55^\circ$, five more sources are added. Together, the 47 sources are responsible for $R_\text{r}=0.2$ of the total GCE flux. \comment{Shouldn't I actually redo this addition given the fact that I'm now not using the same GCE flux as Fermilab?} These 47+5 sources used here are displayed in figure \ref{fig:47-sources}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figs/point-source-positions.pdf}
+    \caption{The 47 point sources within $0.3^\circ$ of a 4FGL source. Also shown are the 5 sourecs added by extending to $0.55^\circ$ separation. The sources are scaled by luminosity in radius. The gray band represents the $|b| \leq 2^\circ$ cut made around the galactic disk.}
+    \label{fig:47-sources}
+\end{figure}
+
+It is important to note that the above values for $N_\text{r}$ and $R_\text{r}$ define an allowed region, which includes populations with lower $N_\text{r}$ and $R_\text{r}$, because some of the unknown sources might not be pulsars.
+
+
 
 We will also discuss a third feature of a potential MSP population in the GC: the total number of MSPs $N_\text{GCE}$, resolved or unresolved. This number is not measurable, but serves as a useful reference to gauge the physicality of any population of MSPs. \comment{Mention that it's expected to be around 40,000.}
 
@@ -64,7 +79,7 @@ Since an estimate of the total flux of the GCE is necessary for our data, we ext
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{figs/all-spectra.pdf}
-    \caption{}
+    \caption{Spectra from seven analyses of the GCE, using different background models, shown with error bars when reported.}
     \label{fig:all-spectra}
 \end{figure}
 
@@ -75,22 +90,23 @@ The first method is direct numerical integration of the spectra provided by each
 
 However, numerical integration cannot account for the spectrum lying outside of \textit{Fermi}'s spectrum of sensitivity, and it may be oversensitive to experimental error. Therefore, we also consider a broken law fit to the data, of the same form as the NPTF luminosity function: eq. \ref{eqn:nptf}. It has four parameters: a constant of proportionality, the turnover flux $F_\text{b}$, and the slopes above and below the turnover flux $n_2$ and $n_1$. This function can then be analytically integrated over all flux values to get the total flux of the GCE. Many of the analyses cited above only report error bars on some points, because error bars on the other points are too large. We therefore fit only to the points with error bars reported. \comment{Mention the specific range fitted over}.
 
-Unfortunately, for some analyses, the number of points reported with error bars is only slightly larger than the number of parameters of the broken power law function. To ensure that the fit result is less prone to statistical deviations of a small number of points, we use a third method in addition to the above two. Ref. \cite{Calore:2014xka} provides their fit parameters for their GCE flux spectral data: $F_\text{b} = $. $n_1 = -1.42$, $n_2 = 2.63$. \comment{Check for sign errors in the original. Also get the flux they provide.}. The third fitting method is to fix these three broken power law parameters at these values and allow only the overall normalization to vary.
+Unfortunately, for some analyses, the number of points reported with error bars is only slightly larger than the number of parameters of the broken power law function. To ensure that the fit result is less prone to statistical deviations of a small number of points, we use a third method in addition to the above two. Ref. \cite{Calore:2014xka} provides their fit parameters for their GCE flux spectral data: $F_\text{b} = $. $n_1 = -1.42$, $n_2 = 2.63$. \comment{Check for sign errors in the original. Also get the flux they provide.}. The third fitting method is to fix these three broken power law parameters at these values and allow only the overall normalization to vary. An example of all three of these fitting methods applied to reference \cite{DiMauro:2021raz} and shown in figure \ref{fig:di-mauro-example}.
 
-An example of all three of these fitting methods applied to reference \cite{DiMauro:2021raz} is shown in figure \ref{fig:di-mauro-example}.
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{figs/di-mauro-example.pdf}
-    \caption{}
+    \caption{Spectrum produced by di Mauro in ref. \cite{DiMauro:2021raz}, with the two broken power law models fitted and shown.}
     \label{fig:di-mauro-example}
 \end{figure}
 
+In practice, the three fitting methods yield very similar results for a single analysis. However, the values provided by different analyses vary greatly. For this study, we use the value obtained from di Mauro's analysis because it occupies a position near the middle of the distribution of GCE luminosities and is a recent study. We choose the value obtained by numerical integration, which is $F_\text{GCE} = \SI{1.295e-9}{\erg\per\centi\meter\squared\per\second}$.
 
-In practice,
+\comment{Discuss how rescaling of the ROI was done}
+
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{figs/total-flux-bars.pdf}
-    \caption{}
+    \caption{Total flux of the GCE as determined by the three integration methods discussed. \comment{Here I would discuss why Ajello doesn't have a value for the power law case if this is still true once I have the original source}.}
     \label{fig:total-flux-bars}
 \end{figure}
 
@@ -103,7 +119,7 @@ In practice,
     \rho_\text{NFW}(r) = \parens{\frac{r}{r_s}}^{-\gamma}\parens{1 + \frac{r}{r_s}}^{-3-\gamma}
     \label{eqn:nfw}
 \end{equation}
-where $\gamma = 1.2$ and $r_s = \SI{20}{\kilo\parsec}$ for this work.
+where $\gamma = 1.2$ and $r_s = \SI{20}{\kilo\parsec}$ for this work. Also, $r_c = \SI{8.5}{\kilo\parsec}$
 
 \subsection{Luminosity Functions}
 \label{sec:lum-funcs}
@@ -131,7 +147,7 @@ Finally, ref. \cite{Lee:2015fea} proposes a broken-power law luminosity function
     \end{cases}
     \label{eqn:nptf}
 \end{equation}
-where the free parameters  $n_1$, $n_2$, and $L_b$ were found via a Non-Poissonian Template Fitting model (NPTF) to be $(18.2, -0.66, \SI{8.66e+33}{\erg\per\second})$ for an NFW-squared-distributed population of MSPs named NFW PS. The pxxxaper proposes a second luminosity function named Disk PS with parameters $(17.5, 1.4, \SI{3.34e+35}{\erg\per\second})$, which is unnormalizable except when a minimum luminosity of pulsars $L_\text{min}$ is introduced. We set $L_\text{min}=\SI{1e29}{\erg\per\second}$, which is the same minimum pulsar luminosity used by ref. \cite{Zhong:2019ycb}. The turnover luminosity $L_\text{b}$ was given as a photon flux value in units of photons per centimeter squared per second; the process used to convert from photon flux to luminosity is detailed in the methods section.
+where the free parameters  $n_1$, $n_2$, and $L_b$ were found via a Non-Poissonian Template Fitting model (NPTF) to be $(18.2, -0.66, \SI{8.66e+33}{\erg\per\second})$ for an NFW-squared-distributed population of MSPs named NFW PS. The paper proposes a second luminosity function named Disk PS with parameters $(17.5, 1.4, \SI{3.34e+35}{\erg\per\second})$, which is unnormalizable except when a minimum luminosity of pulsars $L_\text{min}$ is introduced. We set $L_\text{min}=\SI{1e29}{\erg\per\second}$, which is the same minimum pulsar luminosity used by ref. \cite{Zhong:2019ycb}. The turnover luminosity $L_\text{b}$ was given as a photon flux value in units of photons per centimeter squared per second; the process used to convert from photon flux to luminosity is detailed in the methods section.
 
 All the above-mentioned luminosity functions are shown in figure \ref{fig:lum-funcs}.
 
@@ -145,6 +161,7 @@ All the above-mentioned luminosity functions are shown in figure \ref{fig:lum-fu
 
 
 \subsection{Sensitivity Models}
+\label{sec:sensitivity}
 The \textit{Fermi} telescope does not detect every pulsar in the GC; background emission obscures dimmer pulsars, and statistical effects cause some bright sources to be unresolved. We make use of three sensitivity models to model these factors.
 
 The first, and simplest, is a step function luminosity model. It asserts that all point sources with $L>L_\text{th}$ are resolved, and none with $L<L_{\text{th}}$. Here, $L_\text{th} = \SI{e34}{\erg\per\second}$. This sensitivity model is the one used by ref. \cite{Zhong:2019ycb} to obtain the parameters of the power law luminosity function described in the paragraph after eq. \ref{eqn:power-law}. The four properties we intend to measure are then given by
@@ -174,7 +191,7 @@ $r^2 = s^2 + r_c^2 - 2r_c s \cos \ell$.
 \begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth]{figs/sensitivity-map.pdf}
-    \caption{Position-dependent flux thresholds required to resolve an MSP, published by refs. \cite{Fermi-LAT:2019yla, Ballet:2020hze}.}
+    \caption{Position-dependent flux thresholds required to resolve an MSP, published by refs. \cite{Fermi-LAT:2019yla, Ballet:2020hze}. \comment{Maybe I shouldn't show this plot. It's barely original; just a display of a FITS file pulled from the 4FGL website. But I could overlay the previous figure of where the 47 point sources are. Would that be useful?}}
     \label{fig:sensitivity}
 \end{figure}
 
@@ -183,7 +200,7 @@ The third and final sensitivity model takes into account the statistical fluctua
     P_\text{r}(F) = \frac{1}{\sigma_\text{th} F\sqrt{2\pi}} \expp{-\frac{(\ln F - (F_\text{th}(\ell, b) - K_\text{th}))^2}{2\sigma_\text{th}^2}}
     \label{eqn:ploeg-smoothing}
 \end{equation}
-where $K_\text{th}$ and $\sigma_\text{th}$ were determined via an MCMC fit to globular cluster MSPs. \comment{What are the values?} The observables are calculated simply by multiplying the integrand of the luminosity integral in equation \ref{eqn:observables-sens-2} by $P_r(L/4\pi s^2)$ for $F_\text{r}$ and $N_\text{r}$. (Not for $F_\text{GCE}$, because we do not require that the $F_\text{GCE}$ flux be resolved.)
+where $K_\text{th} = 0.45$ and $\sigma_\text{th} = 0.28$ were determined via an MCMC fit to globular cluster MSPs. The observables are calculated simply by multiplying the integrand of the luminosity integral in equation \ref{eqn:observables-sens-2} by $P_r(L/4\pi s^2)$ for $F_\text{r}$ and $N_\text{r}$. (Not for $F_\text{GCE}$, because we do not require that the $F_\text{GCE}$ flux be resolved.)
 
 
 
@@ -191,11 +208,187 @@ where $K_\text{th}$ and $\sigma_\text{th}$ were determined via an MCMC fit to gl
 
 
 \section{Results}
+\subsection{Step function and position dependent sensitivity models}
+Using each of the luminosity functions outlined in section \ref{sec:sensitivity}, we extract the total number of resolvable point sources $N_\text{r}$, the ratio of the flux received from those resolved point sources to the total flux of the GCE $R_\text{r}$, and the total number of point sources $N_\text{GCE}$ by forcing each function to reproduce the observed flux of the GCE. This is done for many parameterizations of the power law and log normal luminosity functions (eqs. \ref{eqn:power-law} and \ref{eqn:log-normal}), with results using the step function and the position-dependent sensitivity models shown in figures \ref{fig:step-function} and \ref{fig:position-dependent} respectively.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figs/power-law-step.pdf}
+        \includegraphics[width=\textwidth]{figs/power-law-alpha-step.pdf}
+        \includegraphics[width=\textwidth]{figs/log-normal-step.pdf}
+        \caption{Step function sensitivity model}
+        \label{fig:step-function}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figs/power-law-pos-1x.pdf}
+        \includegraphics[width=\textwidth]{figs/power-law-alpha-pos-1x.pdf}
+        \includegraphics[width=\textwidth]{figs/log-normal-pos-1x.pdf}
+        \caption{Position dependent sensitivity model}
+        \label{fig:position-dependent}
+    \end{subfigure}
+    \caption{$N_\text{r}$, $R_\text{r}$, and $N_\text{GCE}$ calculations generated for parameterizations of a power law luminosity function (top two plots) and log normal (bottom plots). The parameterizations used in other analyses are marked. Regions allowed by the $N_\text{r} \leq 47$ and $R_\text{r} \leq 0.2$ are marked with \texttt{|} and \texttt{-} respectively, while regions allowed by both constraints are marked with \texttt{+}. The top power law plot (blue) fixes $\alpha=1.94$ while the lower (green) fixes $L_\text{min}=\SI{1e29}{erg\per\second}$ }
+\end{figure}
+
+Also shaded in these figures is the ``allowed region'' for each luminosity function---that is, the set of parameters that yield $N_\text{r} \leq 47$ and $R_\text{r} \leq 0.2$.
+
+The analysis is also performed on the NPTF luminosity function, but only for the parameterization outlined in ref. \cite{Lee:2015fea} and therefore no figure is generated. Predictions for $N_\text{r}$, $R_\text{r}$, and $N_\text{GCE}$ for the specific parameterizations suggested by previous works are shown in tables \ref{tab:step-function-results} and \ref{tab:position-dependent-results}.
+
+\begin{table}
+    \centering
+    \begin{subtable}[h]{0.55\textwidth}
+        \begin{tabular}{|l|c|c|c|}
+            \hline
+            Luminosity function & $N_\text{r}$ & $R_\text{r}$ & $N_\text{GCE}$\\ \hline \hline
+            Observation & 47 & 0.2 & \\ \hline
+            Power law & 115 & 0.193 & $\num{8.14e6}$ \\
+            Log normal, GCL & 296 & 0.910 & 638 \\
+            Log normal, GCE & 142 & 0.180 & $\num{2.58e4}$ \\
+            NFW NPTF & 19.9 & 0.0136 & $\num{2.71e3}$ \\
+            DISK NPTF & 208 & 0.883 & $\num{2.73e4}$ \\
+            \hline
+        \end{tabular}
+        \caption{Step function sensitivity model}
+        \label{tab:step-function-results}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[h]{0.44\textwidth}
+        \begin{tabular}{|c|c|c|}
+            \hline
+            $N_\text{r}$ & $R_\text{r}$ & $N_\text{GCE}$\\ \hline \hline
+            47 & 0.2 & \\ \hline
+            17.6 & 0.101 & $\num{5.91e6}$ \\
+            77.5 & 0.692 & 463 \\
+            13.4 & 0.0648 & $\num{1.91e4}$ \\
+            7.48 & 0.0300 & $\num{1.97e3}$ \\
+            71.7 & 0.757 & $\num{1.98e4}$ \\
+            \hline
+        \end{tabular}
+        \caption{Position-dependent sensitivity model}
+        \label{tab:position-dependent-results}
+    \end{subtable}
+    \caption{Number of resolved point sources, ratio of resolved flux to total flux, and total number of point sources predicted to make up the GCE based on four luminosity functions and the requirement that the point sources reproduce the entire flux of the GCE.}
+\end{table}
+
+The results of this analysis scale linearly with the flux of the GCE used. Figure \ref{fig:multiple-fluxes} shows figure \ref{tab:position-dependent-results} but with flux values from analyses other than di Mauro's represented. Note that $R_\text{r}$ does not vary because both fluxes in the ratio are scaled by the same amount. However, $N_\text{r}$ varies greatly for different GCE fluxes, especially in the power law case.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.49\textwidth]{figs/power-law-mult.pdf}
+    \includegraphics[width=0.49\textwidth]{figs/power-law-alpha-mult.pdf}
+    \includegraphics[width=0.49\textwidth]{figs/log-normal-mult.pdf}
+    \caption{$N_\text{r}$ and $R_\text{r}$ for each luminosity function, with results for $N_\text{r}=47$ constraint shown for Fermilab gNFW's, Abazajian's, and Ajello's estimates of the GCE spectrum.}
+    \label{fig:multiple-fluxes}
+\end{figure}
+
+\comment{It would probably be nice to have a table showing $N_\text{r}$ and $N_\text{GCE}$ as well.}
+
+
+
+
+\subsection{Smoothed sensitivity model}
+
+\subsection{Flux distribution}
+Until this point, we have compared predictions for the population of point source in the GC to observations only through the number and flux of resolved point sources. We may expand this analysis by comparing the flux distribution of point source population as well.
+
+Figure \ref{fig:flux-distro-fix-count} shows the flux distribution of the four luminosity functions with the number of resolvable point sources fixed at 47, which is the number we observed. The distributions are superimposed on the observed flux distribution of the 47 sources as obtained from the 4FGL catalog \cite{Fermi-LAT:2019yla}, as well as the flux distribution with the 0.53$^\circ$ cut (see section \ref{sec:observables}). Figure \ref{fig:flux-distro-fix-flux} requires each model to reproduce the total flux of the GCE, allowing the aggregate number of resolved point sources to vary. These histograms are calculated with the position-dependent sensitivity model.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.47\textwidth}
+        \includegraphics[width=\textwidth]{figs/flux-distro-fix-count.pdf}
+        \caption{Each luminosity function is forced to reproduce 47 sources, which is the observed number}
+        \label{fig:flux-distro-fix-count}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.47\textwidth}
+        \includegraphics[width=\textwidth]{figs/flux-distro-fix-flux.pdf}
+        \caption{Each luminosity function is forced to reproduce the flux of the GCE}
+        \label{fig:flux-distro-fix-flux}
+    \end{subfigure}
+    \caption{Distribution of resolved sources predicted by each luminosity function compared to observed distribution, where observed point sources are allowed to be within 0.3$^\circ$ of spatial peaks in the GCE flux (gray histogram) and 0.53$^\circ$ (black histogram).}
+\end{figure}
+
+The total GCE flux yielded by the luminosity functions shown in figure \ref{fig:flux-distro-fix-count} which are forced to reproduce the number of observed sources is shown in table \ref{tab:rescaled-gce-flux}.
+
+\begin{table}
+    \centering
+    \begin{tabular} {|l|c|c|}
+        \hline
+        Luminosity function & $F_\text{GCE}^\text{hyp}\ (\SI{}{\erg\per\second})$ & $F^\text{hyp}_\text{GCE} / F^\text{obs}_\text{GCE}$\\ \hline \hline
+        Power law & $\num{3.49e-09}$ & $\num{2.69}$\\
+        Log normal globular cluster & $\num{7.91e-10}$ & $\num{0.61}$ \\
+        Log normal GCE & $\num{4.66e-09}$ & $\num{3.60}$\\
+        NPTF & $\num{8.29e-09}$ & $\num{6.40}$\\
+        \hline
+    \end{tabular}
+    \caption{Total GCE flux ($F_\text{GCE}^\text{hyp}$) required by each luminosity function to yield 47 observed forces, and the ratio of that flux to the observed GCE flux $F_\text{GCE}^\text{obs}$ for comparison.}
+    \label{tab:rescaled-gce-flux}
+\end{table}
 
 
 
 \section{Future Sensitivity}
+We simulate an increase in sensitivity of GCE measurements by reusing the same $F_\text{th}(b, \ell)$ sensitivity map (figure \ref{fig:sensitivity}) as the one provided by the Fermi-LAT team, but with an overall multiplicative decrease. In particular, we study cases where the sensitivity is decreased by a factor of two, five, and ten and reproduce the analysis found earlier in the paper. Plots of $N_\text{r}$ for different parameterizations of the power law and log normal luminosity functions are given in figure \ref{fig:sensitivity-plots}, and values for $N_\text{r}$, $R_\text{r}$, and $N_\text{GCE}$ for specific parameterizations are given in table \ref{tab:sensitivity-values}. Of course, the number of sources in the GCE does not depend on \textit{Fermi} sensitivity and will not change. \comment{That means that the backgrounds of the column plots do not change from plot to plot. I could put them all on the same thing.}
 
+\begin{figure}
+\centering
+    \begin{subfigure}[h]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{figs/power-law-sensitivity.pdf}
+        \caption{Power law}
+        \label{fig:sens-power-law}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[h]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{figs/power-law-alpha-sensitivity.pdf}
+        \caption{Power law alpha}
+        \label{fig:sens-power-law-alpha}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[h]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{figs/log-normal-sensitivity.pdf}
+        \caption{Log normal}
+        \label{fig:sens-log-normal}
+    \end{subfigure}
+    \caption{$N_\text{r}$, $R_\text{r}$, and $N_\text{GCE}$ calculations generated for parameterizations of a power law luminosity function (left two plots) and log normal (bottom plots), for a position-dependent sensitivity model. The top three plots correspond to the current sensitivity of the \textit{Fermi} telescope (the same as figure \ref{fig:position-dependent}), while the second row assumes that the flux threshold $F_\text{th}(b, \ell)$ has been reduced by a factor of two at all points in the region of interest. The third row assumes a five times decrease and the second row assumes a ten times decrease.}
+    \label{fig:sensitivity-plots}
+\end{figure}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        Luminosity function & $N_\text{r}$ & $R_\text{r}$\\ \hline \hline
+        Observation & 47 & \\ \hline
+        Power law & 115 & $\num{8.14e6}$ \\
+        Log normal, GCL & 0.910 & 638 \\
+        Log normal, GCE & 0.180 & $\num{2.58e4}$ \\
+        NFW NPTF & 19.9 & $\num{2.71e3}$ \\
+        DISK NPTF & 208 & $\num{2.73e4}$ \\
+        \hline \hline
+        Power law & 115 & $\num{8.14e6}$ \\
+        Log normal, GCL & 0.910 & 638 \\
+        Log normal, GCE & 0.180 & $\num{2.58e4}$ \\
+        NFW NPTF & 19.9 & $\num{2.71e3}$ \\
+        DISK NPTF & 208 & $\num{2.73e4}$ \\
+        \hline \hline
+        Power law & 115 & $\num{8.14e6}$ \\
+        Log normal, GCL & 0.910 & 638 \\
+        Log normal, GCE & 0.180 & $\num{2.58e4}$ \\
+        NFW NPTF & 19.9 & $\num{2.71e3}$ \\
+        DISK NPTF & 208 & $\num{2.73e4}$ \\
+        \hline \hline
+        Power law & 115 & $\num{8.14e6}$ \\
+        Log normal, GCL & 0.910 & 638 \\
+        Log normal, GCE & 0.180 & $\num{2.58e4}$ \\
+        NFW NPTF & 19.9 & $\num{2.71e3}$ \\
+        DISK NPTF & 208 & $\num{2.73e4}$ \\
+        \hline
+    \end{tabular}
+    \caption{Number of resolved point sources and total number of point sources predicted to make up the GCE based on four luminosity functions and the requirement that the point sources reproduce the entire flux of the GCE. The top row indicates the current \textit{Fermi} sensitivity, the second a twofold increase in $F_\text{th}(b, \ell)$, the third a fivefold increase, and the last a tenfold increase.}
+    \label{tab:sensitivity-values}
+\end{table}
 
 
 \section{Conclusion}

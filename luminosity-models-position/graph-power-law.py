@@ -1,17 +1,10 @@
-''' Things to check:
-    Is the NFW profile a number density?
-    What is r_s from the Fermilab paper?
-    I should integrate the square of the NFW profile, not square the integral, right?
-    Am I using the number position distribution and luminosity position distribution in the correct places?
-'''
-
 from matplotlib import pyplot as plt
 import matplotlib.colors as colors
 from math import log
 import numpy as np
 from matplotlib.lines import Line2D
 
-plt.style.use('revtex-presentation')
+plt.style.use('jcap')
 
 
 PLOT_SIZE = 50
@@ -28,11 +21,12 @@ paperPoint = [1e35, 1e29]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=0.2
-TOTAL_FLUX = 7.494712733226778e-10
+TOTAL_FLUX = 1.2953417255755896e-09#7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = False
 LINE_COLOR ="C0"
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/power-law/"
+PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-" \
++str(MULTIPLIER) + "x/power-law/"
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -48,7 +42,6 @@ def shade(field, threshold, xs, ys, off=False):
                 px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
                 py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
     plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.7)
-SHADE_SCALE=25
 
 # ========================== Load data ===========================
 
@@ -99,23 +92,23 @@ plt.yscale("log")
 plt.xlabel("$L_\\mathrm{max}$ [ergs / s]")
 plt.ylabel("$L_\\mathrm{min}$ [ergs / s]")
 
-c1 = plt.contourf(lMaxVals, lMinVals, totalNum, 
+c1 = plt.contourf(lMaxVals, lMinVals, totalNum,
                    norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                    vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
 cbar = plt.colorbar(c1, extend='max')
-cbar.set_label("$N$")
+cbar.set_label("$N_\\mathrm{GCE}$")
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(lMaxVals, lMinVals, numSeen, [10*i for i in range(1, 20)], 
-        colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2)
+    plt.contour(lMaxVals, lMinVals, numSeen, [10*i for i in range(1, 20)],
+        colors=[(0, i/20.0, 0, 1) for i in range(1, 20)])
+plt.contour(lMaxVals, lMinVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR])
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(lMaxVals, lMinVals, lumSeen, [0.1*i for i in range(1, 15)], 
-        colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
-plt.contour(lMaxVals, lMinVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2)
+    plt.contour(lMaxVals, lMinVals, lumSeen, [0.1*i for i in range(1, 15)],
+        colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)])
+plt.contour(lMaxVals, lMinVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
 # Observation
 shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, lMaxVals, lMinVals)
@@ -126,19 +119,14 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, lMaxVals, lMinVals, True)
 
 plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
 
-custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2)),
+custom_lines = [Line2D([0], [0], color=LINE_COLOR),
+                Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
                 Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None'),]
 plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$", "Fermilab point"], loc='lower right')
 plt.xlim(lMaxVals[0], lMaxVals[-1])
 plt.ylim(lMinVals[0], lMinVals[-1])
 plt.tight_layout()
 
-
-if(DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE + "overlay-extra.png")
-if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig(PATH_TO_FILE + "power-law-pos-x" + str(MULTIPLIER) + ".png")
-    plt.savefig("C:/Users/goods/Dropbox (MIT)/GCE UROP/summaries/jan-2021/figs/power-law/power-law-pos-x" + str(MULTIPLIER) + ".png")
+plt.savefig("power-law-pos-x" + str(MULTIPLIER) + ".pdf")
 
 plt.show()

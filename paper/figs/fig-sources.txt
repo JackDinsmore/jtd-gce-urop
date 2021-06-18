@@ -6,3 +6,22 @@ sensitivity-map.pdf sensitivity/flux-thresholds.pdf
 di-mauro-example.pdf compare-spectra/example.pdf
 total-flux-bars.pdf compare-spectra/integral-hist.pdf
 all-spectra.pdf compare-spectra/all-spectra.pdf
+
+flux-distro-fix-count.pdf flux-histograms/hist-fix-count.pdf
+flux-distro-fix-flux.pdf flux-histograms/hist-fix-flux.pdf
+point-source-positions.pdf flux-histograms/all-sources.pdf
+
+power-law-step.pdf luminosity-models-step/power-law/power-law-step.pdf
+power-law-alpha-step.pdf luminosity-models-step/power-law-alpha/power-law-alpha-step.pdf
+log-normal-step.pdf luminosity-models-step/log-normal/log-normal-step.pdf
+power-law-pos-1x.pdf luminosity-models-position/power-law-pos-x1.pdf
+power-law-alpha-pos-1x.pdf luminosity-models-position/power-law-alpha-pos-x1.pdf
+log-normal-pos-1x.pdf luminosity-models-position/log-normal-pos-x1.pdf
+
+power-law-sensitivity.pdf luminosity-models-position/sensitivity/power-law-sensitivity.pdf
+power-law-alpha-sensitivity.pdf luminosity-models-position/sensitivity/power-law-alpha-sensitivity.pdf
+log-normal-sensitivity.pdf luminosity-models-position/sensitivity/log-normal-sensitivity.pdf
+
+power-law-mult.pdf multiple-flux-values/luminosity-models-position/overlay-power-law.pdf
+power-law-alpha-mult.pdf multiple-flux-values/luminosity-models-position/overlay-power-law-alpha.pdf
+log-normal-mult.pdf multiple-flux-values/luminosity-models-position/overlay-log-normal.pdf

@@ -5,7 +5,7 @@ import matplotlib.colors as colors
 from matplotlib.lines import Line2D
 import numpy as np
 
-plt.style.use('revtex')
+plt.style.use('jcap')
 
 
 FERMILAB_GNFW_FLUX = 5.716826056794996e-10
@@ -30,11 +30,12 @@ NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=0.2
 TOTAL_FLUX =1.2953417255755896e-09
 
-DRAW_EXTRA_CONTOURS = True
-SHOW_NUMBERS = False
-LINE_COLOR = (0.8, 0.3, 0.1)
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/power-law-alpha/"
+PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/power-law-alpha/"
 SHADE_SCALE=25
+LINE_COLOR = "C2"
+STYLES = ["solid", "dashed", "dotted", "dashdot"]
+SHOW_NUMBERS = False
+DRAW_EXTRA_CONTOURS = True
 
 def shade(field, threshold, xs, ys, off=False):
     px = []
@@ -48,7 +49,7 @@ def shade(field, threshold, xs, ys, off=False):
                 fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
                 px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
                 py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
-    plt.scatter(px, py, marker=('|' if off else '_'), c='k', sizes = (20,), alpha=0.5)
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=1)
 
 # ========================== Load data ===========================
 
@@ -86,9 +87,6 @@ lumSeen = np.transpose(np.stack(lumSeen, axis=0))
 
 # ========================= Display data =========================
 
-dimMin = len(totalNum)
-dimMax = len(totalNum[0])
-
 alphaVals = [ALPHA_RANGE[0] + (ALPHA_RANGE[1] - ALPHA_RANGE[0]) * (float(i) / PLOT_SIZE) for i in range(PLOT_SIZE)]
 lMaxVals = [L_MAX_RANGE[0] * maxPowerStep**j for j in range(PLOT_SIZE)]
 
@@ -97,25 +95,24 @@ fig, ax = plt.subplots(figsize=(6, 4))
 #plt.xscale("log")
 plt.yscale("log")
 plt.xlabel("$\\alpha$")
-plt.ylabel("$L_\mathrm{max}$")
-plt.title("Power-law, position-dependent")
+plt.ylabel("$L_\\mathrm{max}$ [erg / s]")
 
 if SHOW_NUMBERS:
-    c1 = plt.pcolor(alphaVals, lMaxVals, totalNum, 
+    c1 = plt.pcolor(alphaVals, lMaxVals, totalNum,
                     norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                     vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
     cbar = plt.colorbar(c1, extend='max')
-    cbar.set_label("$N$")
+    cbar.set_label("$N_\\text{GCE}$")
 
 # Greens
 if DRAW_EXTRA_CONTOURS:
-    plt.contour(alphaVals, lMaxVals, numSeen * FERMILAB_GNFW_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["blue"], linewidths=1, label="$N_r$ Fermilab gNFW")
-    plt.contour(alphaVals, lMaxVals, numSeen * ABAZAJIAN_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["green"], linewidths=1, label="$N_r$ Abazajian")
-    plt.contour(alphaVals, lMaxVals, numSeen * AJELLO_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["teal"], linewidths=1, label="$N_r$ Ajello")
-plt.contour(alphaVals, lMaxVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r=47$")
+    plt.contour(alphaVals, lMaxVals, numSeen * FERMILAB_GNFW_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[1])
+    plt.contour(alphaVals, lMaxVals, numSeen * ABAZAJIAN_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[2])
+    plt.contour(alphaVals, lMaxVals, numSeen * AJELLO_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[3])
+plt.contour(alphaVals, lMaxVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, linestyles=STYLES[0])
 
 # Reds
-plt.contour(alphaVals, lMaxVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
+plt.contour(alphaVals, lMaxVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2)
 
 # Observation
 if DRAW_EXTRA_CONTOURS:
@@ -127,23 +124,20 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, alphaVals, lMaxVals, True)
 
 # Final points
 
-plt.scatter(paperPoint[0], paperPoint[1], c='purple')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
 
-
-custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color="blue", lw=1),
-                Line2D([0], [0], color="green", lw=1),
-                Line2D([0], [0], color="teal", lw=1),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2)),]
-plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$'], loc="upper right")
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, linestyle=STYLES[0], lw=2),
+                Line2D([0], [0], color='k', linestyle=STYLES[1], lw=1),
+                Line2D([0], [0], color='k', linestyle=STYLES[2], lw=1),
+                Line2D([0], [0], color='k', linestyle=STYLES[3], lw=1),
+                Line2D([0], [0], color=LINE_COLOR, linestyle='dashed', lw=2, dashes=(4, 2)),
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='none'),]
+plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$', "Fermilab"], loc="lower right")
 plt.ylim(lMaxVals[0], lMaxVals[-1])
 plt.xlim(alphaVals[0], alphaVals[-1])
 plt.tight_layout()
 
 
-if(DRAW_EXTRA_CONTOURS):
-    plt.savefig("overlay-alpha-extra.png")
-if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig("overlay-alpha.png")
+plt.savefig("overlay-power-law-alpha.pdf")
 
 plt.show()

@@ -2,7 +2,7 @@ import os, shutil
 
 ROOT = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/"
 
-f = open("fig-sources.txt", 'r')
+f = open(ROOT + "paper/figs/fig-sources.txt", 'r')
 for line in f.readlines():
     if line == '':
         continue
@@ -15,6 +15,6 @@ for line in f.readlines():
         continue
     if path[-4:] not in [".eps", ".pdf"]:
         print("WARNING: .eps or .pdf file formats are preferred")
-    shutil.copyfile(ROOT+path, "./"+name)
+    shutil.copyfile(ROOT+path, ROOT + "paper/figs/"+name)
 
 f.close()

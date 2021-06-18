@@ -184,12 +184,11 @@ class Spectrum:
     def get_numerical_flux(self, l_min, l_max):
         log_min = np.log10(l_min * ERGS_PER_GEV)
         log_max = np.log10(l_max * ERGS_PER_GEV)
-        if log_min < self.pointsx[0] or log_max > self.pointsx[-1]:
-            print("Integration out of range")
-            print(self.pointsx[0], self.pointsx[-1])
-            print(log_min, log_max)
-            return
-
+        if log_min < self.pointsx[0]:
+            # Treat all points outside the data as zero flux.
+            log_min = self.pointsx[0]
+        if log_max > self.pointsx[-1]:
+            log_max = self.pointsx[-1]
         # Trapezoidal integration
         integral = 0
         i = 0
@@ -220,7 +219,7 @@ class Spectrum:
                 thisy.append(y)
                 up_err.append(u-y)
                 down_err.append(y-d)
-        ax.errorbar(thisx, thisy, yerr=[up_err, down_err], color=color, linestyle='none')
+        ax.errorbar(thisx, thisy, yerr=[up_err, down_err], color=color, linestyle='none', elinewidth=1)
         ax.set_title(self.get_name())
         ax.set_yscale("log")
 
@@ -245,7 +244,7 @@ class Spectrum:
                 up_err.append(u-y)
                 down_err.append(y-d)
         ax.errorbar(thisx, thisy, yerr=[up_err, down_err], color=color,
-            linestyle='none')
+            linestyle='none', elinewidth=1)
         ax.set_title(self.get_name())
         ax.set_yscale("log")
 

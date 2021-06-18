@@ -16,15 +16,16 @@ def get_data(filename):
     return np.asarray(xs), np.asarray(ys)
 
 def power_law(x, c, alpha, lmax):
-    return np.log10(c * (10**x)**(-alpha) * np.exp(-10**x / lmax))
+    return np.log10(c * (10**x)**(-alpha) * np.exp(-10.0**x / lmax))
 
 def log_normal(x, c, l0, sigma):
     return np.log10(c/10**x * np.exp(-(x - np.log10(l0))**2 / (2 * sigma**2)))
 
 def fit_power_law(filename, color):
     datax, datay = get_data(filename)
-    params = optimization.curve_fit(power_law, datax, datay, (1, 1, 1))[0]
+    params = optimization.curve_fit(power_law, datax, datay, (1, 1, 1e-11))[0]
     fity = power_law(datax, params[0], params[1], params[2])
+    print("Power law", params)
     plt.plot(datax, fity, linestyle='dashed', c=color)
     plt.plot(datax, datay, c=color)
     return params[1], params[2]
@@ -32,6 +33,7 @@ def fit_power_law(filename, color):
 def fit_log_normal(filename, color):
     datax, datay = get_data(filename)
     params = optimization.curve_fit(log_normal, datax, datay, (1, 1, 1))[0]
+    print("Log normal", params)
     fity = log_normal(datax, params[0], params[1], params[2])
     plt.plot(datax, fity, linestyle='dotted', c=color)
     plt.plot(datax, datay, c=color)

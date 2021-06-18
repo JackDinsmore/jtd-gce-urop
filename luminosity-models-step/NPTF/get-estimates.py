@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from math import log10
 
-plt.style.use('latex')
+plt.style.use('jcap')
 
 L_EXCESS = 1.2953417255755896e-09 / 8.331593765023139e-47 # 3.3440751340173124e+36  # 1.893 to 11.943 GeV
 DIST_FROM_GALACTIC_CENTER_KILOPARSEC = 8.5

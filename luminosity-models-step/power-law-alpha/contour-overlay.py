@@ -5,27 +5,27 @@ import matplotlib.colors as colors
 from matplotlib.lines import Line2D
 import numpy as np
 
-plt.style.use('latex')
+plt.style.use('jcap')
 
 POWER_STEP = 1.1 # 1 is the minimum
 
-L_EXCESS = 9.7787012e+36# 6.756e36# 6.37e36  # All units are in ergs per second
+L_EXCESS = 1.2953417255755896e-09 / 8.331593765023139e-47
 L_THRESH = 1.0e34
 L_MIN = 1e29
 ALPHA_RANGE = [1.1, 2.5]
-L_MAX_RANGE = [1.0e33, 1.0e38]#[1.0e34, 1.0e36]
+L_MAX_RANGE = [1.0e34, 1.0e38]
 
 NUM_PULSARS_ABOVE_THRESHOLD = 47
 FRAC_ABOVE_THRESHOLD=1/5.0
 
 DRAW_EXTRA_CONTOURS = False
-LINE_COLOR = (0.8, 0.3, 0.1)
+LINE_COLOR = "C2"
 SHADE_SCALE=25
 
 dimAlpha= 50
 dimMax= int(log(L_MAX_RANGE[1]/L_MAX_RANGE[0]) / log(POWER_STEP))
 
-paperPoint = [1e35, 1.94]
+paperPoint = [1.94, 1e35]
 
 def shade(field, threshold, xs, ys, off=False):
     px = []
@@ -40,7 +40,7 @@ def shade(field, threshold, xs, ys, off=False):
                 px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
                 py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
     plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=0.5)
-        
+
 
 def Gamma(s, x):
     if(s < 0):
@@ -64,14 +64,6 @@ def getFracLumAboveThreshold(alpha, lMax):
     # return (lum above thresh) / totalLum
     fracAbove = Gamma(2-alpha, L_THRESH / lMax) / (Gamma(2-alpha, L_MIN / lMax))
     return fracAbove
-
-
-print("""Paper point info:
-    Coordinates: L0 = {0}, sigma = {1}
-    Total num pulsars: {2}
-    Num pulsars above threshold: {3}
-    Fraction luminosity above threshold: {4}""".format(paperPoint[1], paperPoint[0], getNumPulsars(paperPoint[1], paperPoint[0]), 
-    getNumPulsarsAboveThreshold(paperPoint[1], paperPoint[0]), getFracLumAboveThreshold(paperPoint[1], paperPoint[0])))
 
 
 numPulsars = []
@@ -109,50 +101,46 @@ lMaxVals = [L_MAX_RANGE[0] * POWER_STEP**j for j in range(dimMax)]
 
 
 
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots()
 
 plt.yscale("log")
-plt.ylabel("$L_{max}$")
 plt.xlabel("$\\alpha$")
-plt.title("Power law exponential cutoff, step function")
+plt.ylabel("$L_\\mathrm{max}$ [erg / s]")
 
-c1 = plt.pcolor(alphaVals, lMaxVals, numPulsars, 
+c1 = plt.contourf(alphaVals, lMaxVals, numPulsars,
                    norm=colors.LogNorm(vmin=min([min(v) for v in numPulsars]),
                    vmax=max([max(v) for v in numPulsars])), cmap='Greys_r')
 cbar = plt.colorbar(c1, extend='max')
-cbar.set_label("$N$")
+cbar.set_label("$N_\\mathrm{GCE}$")
 
 # Greens
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(alphaVals, lMaxVals, numAboveThreshold, [10*i for i in range(1, 20)], 
-        colors=[(0, i/20.0, 0, 1) for i in range(1, 20)], linewidths=1)
-plt.contour(alphaVals, lMaxVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r=47$")
+    plt.contour(alphaVals, lMaxVals, numAboveThreshold, [10*i for i in range(1, 20)],
+        colors=[(0, i/20.0, 0, 1) for i in range(1, 20)])
+plt.contour(alphaVals, lMaxVals, numAboveThreshold, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR])
 
 # Reds
 if(DRAW_EXTRA_CONTOURS):
-    plt.contour(alphaVals, lMaxVals, fracAboveThreshold, [0.1*i for i in range(1, 15)], 
-        colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)], linewidths=1)
-plt.contour(alphaVals, lMaxVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r=0.2$")
+    plt.contour(alphaVals, lMaxVals, fracAboveThreshold, [0.1*i for i in range(1, 15)],
+        colors=[(1, i/15.0, 1-i/15.0, 1) for i in range(1, 15)])
+plt.contour(alphaVals, lMaxVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
 # Observation
 shade(numAboveThreshold, NUM_PULSARS_ABOVE_THRESHOLD, alphaVals, lMaxVals)
 shade(fracAboveThreshold, FRAC_ABOVE_THRESHOLD, alphaVals, lMaxVals, True)
 
 
-# Final points 
-plt.scatter(paperPoint[1], paperPoint[0], c='purple')
 
-custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2))]
-plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$"])
-plt.ylim(lMaxVals[0], lMaxVals[-1])
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
+
+custom_lines = [Line2D([0], [0], color=LINE_COLOR),
+                Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None'),]
+plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$", "Fermilab point"], loc='lower right')
 plt.xlim(alphaVals[0], alphaVals[-1])
+plt.ylim(lMaxVals[0], lMaxVals[-1])
 plt.tight_layout()
 
-
-if(DRAW_EXTRA_CONTOURS):
-    plt.savefig("overlay-extra.png")
-if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig("overlay.png")
+plt.savefig("power-law-alpha-step.pdf")
 
 plt.show()

@@ -75,14 +75,6 @@ while None in fit_fluxes:
     #del num_fluxes[index]
     #del names[index]
 
-while None in num_fluxes:
-    index = num_fluxes.index(None)
-    num_fluxes[index] = 0
-    #del fit_fluxes[index]
-    #del calore_fluxes[index]
-    #del num_fluxes[index]
-    #del names[index]
-
 x = np.arange(len(fit_fluxes))
 width = 0.25
 hist_fig, hist_ax = plt.subplots()
@@ -90,7 +82,7 @@ hist_ax.bar(x, num_fluxes, width, label="Numerical")
 hist_ax.bar(x + width, calore_fluxes, width, label="Calore", hatch='////', linewidth=0.5)
 hist_ax.bar(x + 2 * width, fit_fluxes, width, label="Power law", hatch='\\\\\\\\', linewidth=0.5)
 hist_ax.legend()
-hist_ax.set_ylabel(f.get_y_label())
+hist_ax.set_ylabel("$F_\\mathrm{GCE}$ [erg / cm$^2$ / s]")
 hist_ax.set_xticks(x + width)
 hist_ax.set_xticklabels(names, rotation=30)
 hist_fig.tight_layout()

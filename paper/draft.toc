@@ -1,12 +1,15 @@
 \contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
 \contentsline {section}{\numberline {2}Methods \& Datasets}{1}{section.2}%
 \contentsline {subsection}{\numberline {2.1}Observables}{1}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Total GCE Luminosity}{1}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}GCE Spacial distribution}{3}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Luminosity Functions}{3}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Sensitivity Models}{4}{subsection.2.5}%
-\contentsline {section}{\numberline {3}Results}{6}{section.3}%
-\contentsline {section}{\numberline {4}Future Sensitivity}{6}{section.4}%
-\contentsline {section}{\numberline {5}Conclusion}{6}{section.5}%
-\contentsline {section}{\numberline {A}Conversion Between GCE Luminosity and Flux}{6}{appendix.A}%
-\contentsline {paragraph}{Note added.}{6}{section*.3}%
+\contentsline {subsection}{\numberline {2.2}Total GCE Luminosity}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}GCE Spacial distribution}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Luminosity Functions}{4}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Sensitivity Models}{5}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Results}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Step function and position dependent sensitivity models}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Smoothed sensitivity model}{7}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Flux distribution}{7}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Future Sensitivity}{10}{section.4}%
+\contentsline {section}{\numberline {5}Conclusion}{10}{section.5}%
+\contentsline {section}{\numberline {A}Conversion Between GCE Luminosity and Flux}{10}{appendix.A}%
+\contentsline {paragraph}{Note added.}{10}{section*.16}%

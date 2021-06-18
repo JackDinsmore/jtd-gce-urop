@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib.lines import Line2D
 
-plt.style.use('revtex-presentation')
+plt.style.use('jcap')
 
 
 PLOT_SIZE = 50
@@ -29,15 +29,16 @@ FRAC_ABOVE_THRESHOLD=1/5.0
 TOTAL_FLUX = 7.494712733226778e-10
 
 DRAW_EXTRA_CONTOURS = True
-LINE_COLOR = (0.8, 0.3, 0.1)
 DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
 SHOW_NUMBERS = False
 
-PATH_TO_FILE = "C:/Users/goods/Dropbox (MIT)/GCE UROP/luminosity-models-position/data/log-normal/"
+PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/log-normal/"
 SHADE_SCALE=25
+LINE_COLOR = "C1"
+STYLES = ["solid", "dashed", "dotted", "dashdot"]
 
 def shade(field, threshold, xs, ys, off=False):
     px = []
@@ -51,7 +52,7 @@ def shade(field, threshold, xs, ys, off=False):
                 fracy = float(y) / SHADE_SCALE * field.shape[0] - iny
                 px.append(xs[inx] + fracx * (xs[inx+1] - xs[inx]))
                 py.append(ys[iny] + fracy * (ys[iny+1] - ys[iny]))
-    plt.scatter(px, py, marker=('|' if off else '_'), c='black', sizes = (20,), alpha=0.5)
+    plt.scatter(px, py, marker=('|' if off else '_'), c=LINE_COLOR, sizes = (20,), alpha=1.0)
 
 # ========================== Load data ===========================
 
@@ -99,31 +100,28 @@ plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
-plt.xlabel("$L_0$")
-plt.title("Log-normal, position-dependent")
+plt.xlabel("$L_0$ [erg / s]")
 
 if SHOW_NUMBERS:
     cols = colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                     vmax=max([max(v) for v in totalNum]))
-    c1 = plt.pcolor(xVals, yVals, totalNum, 
+    c1 = plt.pcolor(xVals, yVals, totalNum,
                     norm=colors.LogNorm(vmin=min([min(v) for v in totalNum]),
                     vmax=max([max(v) for v in totalNum])), cmap='Greys_r')
     cbar = plt.colorbar(c1, extend='max')
-    cbar.set_label("$N$")
+    cbar.set_label("$N_\\mathrm{GCE}$")
 
 
 # Greens
 if DRAW_EXTRA_CONTOURS:
-    plt.contour(xVals, yVals, numSeen * FERMILAB_GNFW_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["blue"], linewidths=1, label="$N_r$ Fermilab gNFW")
-    plt.contour(xVals, yVals, numSeen * ABAZAJIAN_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["green"], linewidths=1, label="$N_r$ Abazajian")
-    plt.contour(xVals, yVals, numSeen * AJELLO_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=["teal"], linewidths=1, label="$N_r$ Ajello")
-plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR], linewidths=2, label="$N_r$")
+    plt.contour(xVals, yVals, numSeen * FERMILAB_GNFW_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[1])
+    plt.contour(xVals, yVals, numSeen * ABAZAJIAN_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[2])
+    plt.contour(xVals, yVals, numSeen * AJELLO_FLUX / DI_MAURO_FLUX, [NUM_PULSARS_ABOVE_THRESHOLD], colors=['k'], linewidths=1, linestyles=STYLES[3])
+plt.contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=LINE_COLOR, linewidths=2, linestyles=STYLES[0])
 
 # Reds
-plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2, label="$R_r$")
+plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed', linewidths=2)
 
-plt.scatter(paperPoint[0], paperPoint[1], c='blue')
-#plt.scatter(minPoint[0], minPoint[1], c='cyan')
 
 # Observation
 if DRAW_EXTRA_CONTOURS:
@@ -133,23 +131,26 @@ else:
 shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
 
-# Final points 
+# Final points
 
-if DRAW_PLOEG_POINT:
-    plt.scatter(ploegPoint[0], ploegPoint[1], c='green')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor="C1", marker='^')
+plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
 
-custom_lines = [Line2D([0], [0], color=LINE_COLOR, lw=2),
-                Line2D([0], [0], color="blue", lw=1),
-                Line2D([0], [0], color="green", lw=1),
-                Line2D([0], [0], color="teal", lw=1),
-                Line2D([0], [0], color=LINE_COLOR, lw=2, dashes=(4, 2)),]
-plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$'], loc="lower left")
+
+custom_lines = [Line2D([0], [0], color=LINE_COLOR, linestyle=STYLES[0], lw=2),
+                Line2D([0], [0], color='k', linestyle=STYLES[1], lw=1),
+                Line2D([0], [0], color='k', linestyle=STYLES[2], lw=1),
+                Line2D([0], [0], color='k', linestyle=STYLES[3], lw=1),
+                Line2D([0], [0], color=LINE_COLOR, linestyle='dashed', lw=2, dashes=(4, 2)),
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
+plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$', "GCL", "GCE"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 
 plt.tight_layout()
 
 # Save
-plt.savefig("overlay-log-normal.png")
+plt.savefig("overlay-log-normal.pdf")
 
 plt.show()
