@@ -1,0 +1,7 @@
+PWD /home/jtdinsmo/Dropbox (MIT)/GCE UROP/summaries/jan-2021
+INPUT /etc/texmf/web2c/texmf.cnf
+INPUT /usr/share/texmf/web2c/texmf.cnf
+INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
+INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
+INPUT jan-2021.tex
+OUTPUT jan-2021.log

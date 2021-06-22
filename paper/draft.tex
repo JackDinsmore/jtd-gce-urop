@@ -33,6 +33,7 @@
 
 \DeclareSIUnit\erg{erg}
 \DeclareSIUnit\parsec{pc}
+\DeclareSIUnit\photon{photon}
 
 
 
@@ -51,13 +52,23 @@
 
 
 \section{Methods \& Datasets}
+\subsection{GCE Spacial distribution}
+We model the spacial distribution of MSPs in the GC with an NFW squared profile, to match with empirical data. The number density of an NFW profile is spherically symmetric, with radial density profile
+\label{sec:spacial-distro}
+\begin{equation}
+    \rho_\text{NFW}(r) \propto \parens{\frac{r}{r_s}}^{-\gamma}\parens{1 + \frac{r}{r_s}}^{-3-\gamma}
+    \label{eqn:nfw}
+\end{equation}
+where $\gamma = 1.2$ and $r_s = \SI{20}{\kilo\parsec}$ for this work. Other sources occasionally use $\gamma = 1$.
+
+We allow this NFW distribution to extend over a region of interest (ROI) extending within $|\ell| < 20^\circ$ and $2^\circ < |b| < 20^\circ$, where we have cut out the Galactic disk. We also restrict the luminosity of the GCE to within $\SI{0.1}{\giga\electronvolt} < E_\gamma < \SI{100}{\giga\electronvolt}$. Both these ranges are slightly on the larger side of those commonly used in literature.
 
 
 \subsection{Observables}
 \label{sec:observables}
-To fit the luminosity functions described in section \ref{sec:lum-funcs}, we will use three observables: the total flux of the GCE $F_\text{GCE}$, the ratio of the total flux to the flux visible from point sources resolved by \textit{Fermi} $R_\text{r}$, and the number of resolved point sources $N_\text{r}$. All of these observables will be made with reference to a region of interest (ROI) defined by $|\ell| < 20^\circ$ and $2^\circ < |b| < 20^\circ$, and we will restrict the GCE spectrum to $\SI{0.1}{\giga\electronvolt} < E_\gamma < \SI{100}{\giga\electronvolt}$.
+To fit the luminosity functions described in section \ref{sec:lum-funcs}, we will use three observables: the total flux of the GCE $F_\text{GCE}$, the ratio of the total flux to the flux visible from point sources resolved by \textit{Fermi} $R_\text{r}$, and the number of resolved point sources $N_\text{r}$. The first observable, $F_\text{GCE}$, is described in section \ref{sec:total-lum}, but we describe the other two observables in this section.
 
-The other two observables have been studied by \comment{Some technical name for the Fermilab team.} \cite{Zhong:2019ycb}. The authors performed a template fit to data from Fermi-LAT to isolate spacial peaks in flux, finding 110 \comment{(I got 110; their paper says 107)} peaks within 0.3$^\circ$ of a source in the 4FGL catalog within the region of interest \cite{Abdollahi_2020}. Of these 110 sources, they exclude all that are listed in the 4FGL catalog as not associated with pulsars. Of those that are known to be pulsars, they exclude all whose positions are known not to be within 2 kpc of the GC via the ATNF Pulsar Catalog \cite{Hobbs04}. This leaves 47 point sources in the 4FGL catalog whose origins are either known to be pulsars in the GC or are unknown. We will therefore set $N_\text{r} = 47$ for this paper. If the allowed distance between a flux peak and a 4FGL source is extended from 0.3$^\circ$ to $0.55^\circ$, five more sources are added. Together, the 47 sources are responsible for $R_\text{r}=0.2$ of the total GCE flux. \comment{Shouldn't I actually redo this addition given the fact that I'm now not using the same GCE flux as Fermilab?} These 47+5 sources used here are displayed in figure \ref{fig:47-sources}.
+$N_\text{r}$ and $R_\text{r}$ have been studied by \comment{Some technical name for the Fermilab team.} \cite{Zhong:2019ycb}. The authors performed a template fit to data from Fermi-LAT to isolate spacial peaks in flux, finding 110 \comment{(I got 110; their paper says 107)} peaks within 0.3$^\circ$ of a source in the 4FGL catalog within the region of interest \cite{Abdollahi_2020}. Of these 110 sources, they exclude all that are listed in the 4FGL catalog as not associated with pulsars. Of those that are known to be pulsars, they exclude all whose positions are known not to be within 2 kpc of the GC via the ATNF Pulsar Catalog \cite{Hobbs04}. This leaves 47 point sources in the 4FGL catalog whose origins are either known to be pulsars in the GC or are unknown. We will therefore set $N_\text{r} = 47$ for this paper. If the allowed distance between a flux peak and a 4FGL source is extended from 0.3$^\circ$ to $0.55^\circ$, five more sources are added. Together, the 47 sources are responsible for $R_\text{r}=0.2$ of the total GCE flux. \comment{Shouldn't I actually redo this addition given the fact that I'm now not using the same GCE flux as Fermilab?} These 47+5 sources used here are displayed in figure \ref{fig:47-sources}.
 
 \begin{figure}
     \centering
@@ -113,14 +124,6 @@ In practice, the three fitting methods yield very similar results for a single a
 
 \comment{Just double check that I normalized the power law correctly in parse\_spectrum.py.}
 
-
-\subsection{GCE Spacial distribution}
-\begin{equation}
-    \rho_\text{NFW}(r) = \parens{\frac{r}{r_s}}^{-\gamma}\parens{1 + \frac{r}{r_s}}^{-3-\gamma}
-    \label{eqn:nfw}
-\end{equation}
-where $\gamma = 1.2$ and $r_s = \SI{20}{\kilo\parsec}$ for this work. Also, $r_c = \SI{8.5}{\kilo\parsec}$
-
 \subsection{Luminosity Functions}
 \label{sec:lum-funcs}
 Previous work has interpreted this MSP model. Ref. \cite{Zhong:2019ycb} has proposed an exponentially damped power law luminosity function
@@ -139,6 +142,8 @@ where $L_0$ and $\sigma$ are free parameters. The ref. fits this model to data f
 
 Ref. \cite{Ploeg:2020jeh} proposes several more intricate luminosity functions, derived from a model of the pulsars themselves. They find that the same model may be used for resolved, globular cluster MSPs in the Galactic disk and unresolved MSPs at the Galactic center. We use their luminosity function generated for the galactic disk. It closely resembles a log normal luminosity function as in equation \ref{eqn:log-normal}, where $L_0 = \SI{1.61e+32}{\erg\per\second}$ and $\sigma=0.700$.
 
+Another study by Gautam et al. analyzes the possibility that the hypothetical MSP population in the GCE is generated not by the Low Mass X-Ray Binary formation, but by Accretion Induced Collapse \cite{Gautam:2021wqn}. \comment{To distinguish between this, a definition of these two collapse methods, along with models other than an MSP model, should be put in the introduction. Mention the fact that the MSPs in the GCE would have to look different from that in the disk.} Their binary system model yields a numerical luminosity function for MSPs in the GC, reported as a function of flux. Converting to luminosity in the manner described in appendix \ref{app:lum-to-flux}, we find that a log normal distribution fits their function well, with $L_0 = \SI{3.92e+32}{\erg\per\second}$ and $\sigma = 0.937$. We call this model the AIC Log normal model.
+
 Finally, ref. \cite{Lee:2015fea} proposes a broken-power law luminosity function of
 \begin{equation}
     P_\text{NPTF}(L) = \parens{\frac{\parens{1-n_1}\parens{1-n_2}}{L_b \parens{n_1 - n_2}}}\begin{cases}
@@ -147,7 +152,9 @@ Finally, ref. \cite{Lee:2015fea} proposes a broken-power law luminosity function
     \end{cases}
     \label{eqn:nptf}
 \end{equation}
-where the free parameters  $n_1$, $n_2$, and $L_b$ were found via a Non-Poissonian Template Fitting model (NPTF) to be $(18.2, -0.66, \SI{8.66e+33}{\erg\per\second})$ for an NFW-squared-distributed population of MSPs named NFW PS. The paper proposes a second luminosity function named Disk PS with parameters $(17.5, 1.4, \SI{3.34e+35}{\erg\per\second})$, which is unnormalizable except when a minimum luminosity of pulsars $L_\text{min}$ is introduced. We set $L_\text{min}=\SI{1e29}{\erg\per\second}$, which is the same minimum pulsar luminosity used by ref. \cite{Zhong:2019ycb}. The turnover luminosity $L_\text{b}$ was given as a photon flux value in units of photons per centimeter squared per second; the process used to convert from photon flux to luminosity is detailed in the methods section.
+where the free parameters  $n_1$, $n_2$, and $L_b$ were found via a Non-Poissonian Template Fitting model (NPTF) to be $(18.2, -0.66, \SI{8.66e+33}{\erg\per\second})$ for an NFW-squared-distributed population of MSPs named NFW PS. The paper proposes a second luminosity function named Disk PS with parameters $(17.5, 1.4, \SI{3.34e+35}{\erg\per\second})$, which is unnormalizable except when a minimum luminosity of pulsars $L_\text{min}$ is introduced. \comment{I will want to remove the unnormalizable one. When should I do it?} The luminosity-valued parameters were originally given as fluxes in $\SI{}{\photon \per \centi\meter\squared \per \second}$. The photon energy was calculated via appendix \ref{app:photon-energy} and the flux converted to luminosity via appendix \ref{app:lum-to-flux}.
+
+We set $L_\text{min}=\SI{1e29}{\erg\per\second}$, which is the same minimum pulsar luminosity used by ref. \cite{Zhong:2019ycb}. The turnover luminosity $L_\text{b}$ was given as a photon flux value in units of photons per centimeter squared per second; the process used to convert from photon flux to luminosity is detailed in the methods section.
 
 All the above-mentioned luminosity functions are shown in figure \ref{fig:lum-funcs}.
 
@@ -155,7 +162,8 @@ All the above-mentioned luminosity functions are shown in figure \ref{fig:lum-fu
     \centering
     \includegraphics[width=0.49\textwidth]{figs/lum-funcs.pdf}
     \includegraphics[width=0.49\textwidth]{figs/l-lum-funcs.pdf}
-    \caption{\textit{Left:} Power law, GCL log normal, GCE log normal, and NPTF luminosity functions for MSPs in the GCE, vertically rescaled. \textit{Right:} Same plot as \textit{left} but weighted by luminosity.}
+    \includegraphics[width=0.49\textwidth]{figs/l2-lum-funcs.pdf}
+    \caption{\textit{Left:} Power law, GCL log normal, GCE log normal, and NPTF luminosity functions for MSPs in the GCE, vertically rescaled. \textit{Right:} Same plot as \textit{left} but weighted by luminosity. \textit{Bottom:} Same plot as above two but weighted by luminosity squared.}
     \label{fig:lum-funcs}
 \end{figure}
 
@@ -245,6 +253,7 @@ The analysis is also performed on the NPTF luminosity function, but only for the
             Power law & 115 & 0.193 & $\num{8.14e6}$ \\
             Log normal, GCL & 296 & 0.910 & 638 \\
             Log normal, GCE & 142 & 0.180 & $\num{2.58e4}$ \\
+            Log normal, AIC & 258 & 0.744 & $\num{3.87e3}$ \\
             NFW NPTF & 19.9 & 0.0136 & $\num{2.71e3}$ \\
             DISK NPTF & 208 & 0.883 & $\num{2.73e4}$ \\
             \hline
@@ -261,6 +270,7 @@ The analysis is also performed on the NPTF luminosity function, but only for the
             17.6 & 0.101 & $\num{5.91e6}$ \\
             77.5 & 0.692 & 463 \\
             13.4 & 0.0648 & $\num{1.91e4}$ \\
+            0 & 0 & $\num{0}$ \\
             7.48 & 0.0300 & $\num{1.97e3}$ \\
             71.7 & 0.757 & $\num{1.98e4}$ \\
             \hline
@@ -318,8 +328,9 @@ The total GCE flux yielded by the luminosity functions shown in figure \ref{fig:
         \hline
         Luminosity function & $F_\text{GCE}^\text{hyp}\ (\SI{}{\erg\per\second})$ & $F^\text{hyp}_\text{GCE} / F^\text{obs}_\text{GCE}$\\ \hline \hline
         Power law & $\num{3.49e-09}$ & $\num{2.69}$\\
-        Log normal globular cluster & $\num{7.91e-10}$ & $\num{0.61}$ \\
+        Log normal GCL & $\num{7.91e-10}$ & $\num{0.61}$ \\
         Log normal GCE & $\num{4.66e-09}$ & $\num{3.60}$\\
+        Log normal AIC & $\num{0}$ & $\num{0}$ \\
         NPTF & $\num{8.29e-09}$ & $\num{6.40}$\\
         \hline
     \end{tabular}
@@ -396,11 +407,40 @@ We simulate an increase in sensitivity of GCE measurements by reusing the same $
 
 
 \appendix
+\section{Scaling of ROIs}
+\label{sec:scale-rois}
+To establish a value for the total flux of the GCE, we draw on several analyses of the GCE spectrum in section \ref{sec:total-lum}. However, not all the analyses we study use the same ROI as ours. To convert between our ROI and others', we assume an NFW squared spacial distribution of MSPs in the GCE as discussed in section \ref{sec:spacial-distro}. Then we simply calculate the ratio of flux in our region of interest $F_\Omega$ to flux in another analysis's region of interest $F_{\Omega'}$ via
+\begin{equation}
+    \frac{F_{\Omega'}}{F_\Omega} = \brackets{\int_{\Omega'}d\Omega\int_0^\infty ds \rho_\text{NFW}^2 (r)}\brackets{\int_{\Omega}d\Omega\int_0^\infty ds \rho_\text{NFW}^2 (r)}^{-1}.
+    \label{eqn:roi-conversion}
+\end{equation}
+Here, $s$ represents the distance between Earth and the point of integration, and $r$ represents the galactocentric distance. They are related by $r^2 = s^2 + r_c^2 - 2 s r_c \cos\ell$, where $\ell$ is the Galactic longitude and $r_c$ is the distance between Earth and the center of the Galaxy, taken here to be $\SI{8.5}{\kilo\parsec}$ to be consistent with the rest of this study.
+
+The flux ratio as computed by equation \ref{eqn:roi-conversion} between our region and the same $40^\circ \times 40^\circ$ without the Galactic disk cutout is 2.10. Similarly, the ratio is 1.64, 1.27, 0.915, and 1.013 \comment{Wrong!} for a $30^\circ \times 30^\circ $, $20^\circ \times 20^\circ$, $10^\circ \times 10^\circ$, and $7^\circ \times 7^\circ$ respectively.
+
+
 \section{Conversion Between GCE Luminosity and Flux}
 \label{app:lum-to-flux}
-\comment{Copy most of this from the January summary, if I include it.}
+This analysis requires luminosity functions to be expressed as probability distributions as a function of luminosity, since they are intended to be statements solely about the GC MSP population, made without reference to the distance of observation, and therefore the flux. Yet several papers referenced in this study express luminosity functions as a function of flux. This appendix describes how the conversion to luminosity is done.
+
+As discussed in section \ref{sec:spacial-distro}, we represent the MSP population as distributed according to an NFW squared distribution with $\gamma = 1.2$. One way to convert a function of flux to luminosity would be to simply use the luminosity function which, when integrated over the NFW squared spacial distribution, would reproduce the observed function of flux. But this method would change the functional form of the luminosity function so that, for example, a luminosity function that is log normal when written in terms of flux would no longer be log normal when written in terms of luminosity. \comment{Is it worth devoting a whole paragraph to describing something I do not intend to do? I do it to avoid confusion.}
+
+So for this paper, we simply convert the flux value of every bin to a luminosity according to the following method. We assume that the entire population of MPSs only contains pulsars with luminosity $L$ and ask what average flux $F$ per pulsar is observed. Integrated over the region of interest $\Omega$, this yields a constant flux to luminosity ratio of
+\begin{equation}
+    \frac{F}{L} = \frac{1}{4\pi}\brackets{\int_{\Omega}d\Omega\int_0^\infty ds \rho_\text{NFW}^2 (r)}\brackets{\int_{\Omega}d\Omega \int_0^\infty s^2 ds \rho_\text{NFW}^2 (r)}^{-1} = \SI{1.11e-46}{\per\centi\meter\squared}.
+    \label{eqn:f-to-l}
+\end{equation}
+Here, $s$ represents the distance from Earth to the point of integration, and $r$ represents the distance from the GC to the point of integration. They are related by the law of cosines: $r^2 = s^2 + r_c^2 - 2s r_c \cos \ell$, where $\ell$ is the Galactic longitude. The numerical value reported was computed for $r_c = \SI{8.5}{\kilo\parsec}$. It is slightly lower than the na\"ive value of $\frac{F}{L} = \frac{1}{4\pi r_c^2} = \SI{1.16e-46}{\per\centi\meter\squared}$, which assumes that all the MSPs are at the Galactic center, and therefore does not rely on a choice of $\gamma$.
 
 
+\section{Calculation of photon energy}
+\label{app:photon-energy}
+The parameterization of the NPTF luminosity function of ref. \cite{Lee:2015fea} is given with flux units of photons per second. To convert this to luminosity via appendix \ref{app:lum-to-flux}, we need to find the energy of a single GCE photon. To do this, we fit a broken power law to the GCE spectrum found by di Mauro and described in section \ref{sec:total-lum}, defining the flux observed from photons in an energy bin of energy $E_\gamma$ and width $dE_\gamma$ as $dF = E_\gamma N(E_\gamma)dE_\gamma$. The function $E_\gamma N(E_\gamma)$ is plotted in figure \ref{fig:di-mauro-example}. The average photon energy is then calculated by
+\begin{equation}
+    \langle E_\gamma \rangle =  \brackets{\int_{\SI{0.1}{\giga\electronvolt}}^{\SI{100}{\giga\electronvolt}} E_\gamma N(E_\gamma) dE_\gamma} \brackets{\int_{\SI{0.1}{\giga\electronvolt}}^{\SI{100}{\giga\electronvolt}} N(E_\gamma) dE_\gamma}^{-1} = \SI{0}{\giga\electronvolt}.
+    \label{eqn:photon-energy}
+\end{equation}
+\comment{I'd like to finish this. Give examples of photon energy.}
 
 
 
@@ -409,8 +449,6 @@ We simulate an increase in sensitivity of GCE measurements by reusing the same $
 This is the most common positions for acknowledgments. A macro is
 available to maintain the same layout and spelling of the heading.
 
-\paragraph{Note added.} This is also a good position for notes added
-after the paper has been written.
 
 
 

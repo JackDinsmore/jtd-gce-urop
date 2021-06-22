@@ -7,45 +7,46 @@ Warning--I didn't find a database entry for "Gordon"
 Warning--I didn't find a database entry for "Ajello"
 Warning--I didn't find a database entry for "citation_needed"
 Warning--empty journal in Ballet:2020hze
-You've used 11 entries,
+Warning--empty journal in Gautam:2021wqn
+You've used 12 entries,
             2118 wiz_defined-function locations,
-            580 strings with 8673 characters,
-and the built_in function-call counts, 8847 in all, are:
-= -- 666
-> -- 1050
+            584 strings with 6219 characters,
+and the built_in function-call counts, 4063 in all, are:
+= -- 364
+> -- 253
 < -- 2
-+ -- 417
-- -- 406
-* -- 961
-:= -- 1653
-add.period$ -- 33
-call.type$ -- 11
-change.case$ -- 234
++ -- 98
+- -- 86
+* -- 326
+:= -- 725
+add.period$ -- 36
+call.type$ -- 12
+change.case$ -- 76
 chr.to.int$ -- 0
-cite$ -- 12
-duplicate$ -- 129
-empty$ -- 261
-format.name$ -- 406
-if$ -- 1570
+cite$ -- 14
+duplicate$ -- 139
+empty$ -- 278
+format.name$ -- 86
+if$ -- 807
 int.to.chr$ -- 0
-int.to.str$ -- 11
-missing$ -- 11
-newline$ -- 58
-num.names$ -- 24
-pop$ -- 221
+int.to.str$ -- 12
+missing$ -- 12
+newline$ -- 63
+num.names$ -- 26
+pop$ -- 65
 preamble$ -- 1
-purify$ -- 223
+purify$ -- 64
 quote$ -- 0
-skip$ -- 91
+skip$ -- 100
 stack$ -- 0
-substring$ -- 163
+substring$ -- 168
 swap$ -- 19
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 44
-warning$ -- 1
-while$ -- 32
-width$ -- 13
-write$ -- 122
-(There were 4 warnings)
+type$ -- 48
+warning$ -- 2
+while$ -- 34
+width$ -- 14
+write$ -- 131
+(There were 5 warnings)

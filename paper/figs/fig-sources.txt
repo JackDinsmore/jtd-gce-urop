@@ -1,5 +1,6 @@
 lum-funcs.pdf plot-functions/lum-funcs.pdf
 l-lum-funcs.pdf plot-functions/l-lum-funcs.pdf
+l2-lum-funcs.pdf plot-functions/l2-lum-funcs.pdf
 
 sensitivity-map.pdf sensitivity/flux-thresholds.pdf
 

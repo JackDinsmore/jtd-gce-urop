@@ -23,6 +23,7 @@ DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
+gautamPoint = [3.91983577e+32, 0.937184991]
 SHADE_SCALE=25
 
 def shade(field, threshold, xs, ys, off=False):
@@ -109,27 +110,20 @@ def getMinPulsarsWithinOneStdevOfSigma():
     print("Fewest possible pulsars required to hit the green line with sigma in 1 stdev of paper values: {0} at coordinates L_0={1}, sigma={2}".format(minPulsars, minL0, minSigma))
     return (minL0, minSigma)
 
-def getPaperPointInfo(L0 = paperPoint[0], sigma = paperPoint[1]):
-    print("""Paper point info:
-    Coordinates: L0 = {0}, sigma = {1}
-    Total num pulsars: {2}
-    Num pulsars above threshold: {3}
-    Fraction luminosity above threshold: {4}""".format(L0, sigma, getNumPulsars(L0, sigma),
-    getNumPulsarsAboveThreshold(L0, sigma), getFracLumAboveThreshold(L0, sigma)))
-
-def getPloegPointInfo(L0, sigma):
-    print("""Ploeg point info:
-    Coordinates: L0 = {0}, sigma = {1}
-    Total num pulsars: {2}
-    Num pulsars above threshold: {3}
-    Fraction luminosity above threshold: {4}""".format(L0, sigma, getNumPulsars(L0, sigma),
+def getPaperPointInfo(name, L0 = paperPoint[0], sigma = paperPoint[1]):
+    print("""{0} point info:
+    Coordinates: L0 = {1}, sigma = {2}
+    Total num pulsars: {3}
+    Num pulsars above threshold: {4}
+    Fraction luminosity above threshold: {5}""".format(name, L0, sigma, getNumPulsars(L0, sigma),
     getNumPulsarsAboveThreshold(L0, sigma), getFracLumAboveThreshold(L0, sigma)))
 
 
 getMinNumPulsarsInTriangle()
 minPoint = getMinPulsarsWithinOneStdevOfSigma()
-getPaperPointInfo()
-getPloegPointInfo(ploegPoint[0], ploegPoint[1])
+getPaperPointInfo("Paper (GCL)")
+getPaperPointInfo("Ploeg (GCE)", ploegPoint[0], ploegPoint[1])
+getPaperPointInfo("Gautam (AIC)", gautamPoint[0], gautamPoint[1])
 
 
 numPulsars = []
@@ -169,7 +163,7 @@ plt.ylim(bottom=SIGMA_L_RANGE[0], top=SIGMA_L_RANGE[1])
 
 plt.xscale("log")
 plt.ylabel("$\sigma$")
-plt.xlabel("$L_0$ [ergs/s]")
+plt.xlabel("$L_0$ [erg / s]")
 
 cols = colors.LogNorm(vmin=min([min(v) for v in numPulsars]),
                    vmax=max([max(v) for v in numPulsars]))
@@ -199,7 +193,10 @@ plt.contour(xVals, yVals, fracAboveThreshold, [FRAC_ABOVE_THRESHOLD], colors=[LI
 #plt.plot([(0.88+0.79) * 1e34, (0.88+0.79) * 1e34], SIGMA_L_RANGE, c='blue', linewidth=1)
 
 
-plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', markersize=6)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[0.41e34], [0.79e34]], yerr=[[0.16], [0.15]], linewidth=1)
+plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', markersize=6)
+plt.plot(gautamPoint[0], gautamPoint[1], markeredgecolor='black', markerfacecolor="red", marker='*', markersize=8)
 #plt.scatter(minPoint[0], minPoint[1], c='cyan')
 
 
@@ -208,24 +205,19 @@ shade(numAboveThreshold, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
 shade(fracAboveThreshold, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
 
-# Final points
-if DRAW_PLOEG_POINT:
-    plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR),
                 Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
-                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
-plt.legend(custom_lines, ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "Globular clusters", "GCE"], loc="lower left")
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="red", marker='*', linestyle='None', markersize=8),]
+plt.legend(custom_lines, ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "GCL", "GCE", "AIC"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 
 plt.tight_layout()
 
 # Save
-if(DRAW_EXTRA_CONTOURS):
-    plt.savefig("contour-overlay-extra.png")
-if(not DRAW_EXTRA_CONTOURS):
-    plt.savefig("log-normal-step.pdf")
+plt.savefig("log-normal-step.pdf")
 
 plt.show()

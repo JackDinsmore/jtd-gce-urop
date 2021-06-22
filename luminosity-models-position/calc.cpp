@@ -529,7 +529,7 @@ void generatePowerLawPlotMap(VALUE value, DoubleVector* plotMap) {
         }
     }
 
-#else 
+#else
     for (int i = 0; i < PLOT_SIZE; i++) {
         double lMin = L_MIN_RANGE[0] * pow(powerSteps.first, i);
         std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
@@ -564,7 +564,7 @@ void generatePowerLawAlphaPlotMap(VALUE value, DoubleVector* plotMap) {
         }
     }
 
-#else 
+#else
     std::cout << "Unimplemented" << std::endk;
     throw "Unimplemented";
 #endif
@@ -586,7 +586,7 @@ void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
         }
     }
 
-#else 
+#else
     for (int i = 0; i < PLOT_SIZE; i++) {
         double l0 = L0_RANGE[0] * pow(powerSteps.first, i);
         std::vector<std::future<double>*> futures(PLOT_SIZE, nullptr);
@@ -835,7 +835,7 @@ int nptf() {
     std::future<double> totalFlux = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_FLUX, -0.66, 18.2);
     std::future<double> totalNum = std::async(std::launch::async, getValueAtConfig, VALUE::TOTAL_NUM, -0.66, 18.2);
     std::future<double> seenFlux = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_FLUX, -0.66, 18.2);
-    std::future<double> seenNum = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);    
+    std::future<double> seenNum = std::async(std::launch::async, getValueAtConfig, VALUE::SEEN_NUM, -0.66, 18.2);
 
     double nptfScale = FLUX_EXCESS / totalFlux.get();
     double totalNumScaled = totalNum.get() * nptfScale;

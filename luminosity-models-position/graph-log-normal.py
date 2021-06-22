@@ -27,6 +27,7 @@ DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
+gautamPoint = [3.91983577e+32, 0.937184991]
 
 PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-"\
  + str(MULTIPLIER) + "x/log-normal/"
@@ -116,8 +117,9 @@ if(DRAW_EXTRA_CONTOURS):
         colors=[(1, i/10.0, 1-i/10.0, 1) for i in range(1, 10)])
 plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
-plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^')
-#plt.scatter(minPoint[0], minPoint[1], c='cyan')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', markersize=6)
+plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', markersize=6)
+plt.plot(gautamPoint[0], gautamPoint[1], markeredgecolor='black', markerfacecolor="red", marker='*', markersize=8)
 
 # Observation
 shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
@@ -126,14 +128,13 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
 # Final points
 
-if DRAW_PLOEG_POINT:
-    plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR),
                 Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
-                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
-plt.legend(custom_lines, ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "Globular clusters", "GCE"], loc="lower left")
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="red", marker='*', linestyle='None', markersize=8),]
+plt.legend(custom_lines, ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "GCL", "GCE", "AIC"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 

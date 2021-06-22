@@ -29,6 +29,8 @@ L0_LOG_NORMAL = 8.8e33
 SIGMA_LOG_NORMAL = 0.62
 L0_PLOEG_FIT = 1.61e32
 SIGMA_PLOEG_FIT = 0.700
+L0_GAUTAM_FIT = 3.91983577e+32
+SIGMA_GAUTAM_FIT = 0.937184991
 N_BELOW_NFW = -0.66
 N_ABOVE_NFW = 18.2
 L_BREAK_NFW = 1.76e-10 * ERGS_PER_PHOTON * 4 * pi * (DIST_TO_CENTER * DIST_TO_CENTER * CM_PER_KPC_SQUARED)
@@ -49,7 +51,7 @@ def nptf(x, n1, n2, LBreak):
 
 fig, ax1=plt.subplots()
 
-ax1.set_xlabel("Luminosity $L$ [ergs/s]")
+ax1.set_xlabel("Luminosity $L$ [erg / s]")
 ax1.set_ylabel("$\\frac{dN}{dL}$")
 ax1.set_xscale('log')
 
@@ -57,12 +59,12 @@ x = 10**np.linspace(PLOT_LOG_MIN, PLOT_LOG_MAX, NUM_PLOT_POINTS)
 
 ax2 = ax1.twiny()
 
-ax2.set_xlabel("Flux $F$ [ergs/cm$^2$/s]")
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
 
 def convert_ax2(ax1):
     x1, x2 = ax1.get_xlim()
     ax2.set_xlim(x1 * LUM_TO_FLUX, x2 * LUM_TO_FLUX)
-    ax2.figure.canvas.draw()    
+    ax2.figure.canvas.draw()
 
 ax1.callbacks.connect("xlim_changed", convert_ax2)
 
@@ -70,17 +72,18 @@ ys = [
     powerLaw(x, L_MIN, L_MAX, ALPHA),
     logNormal(x, L0_LOG_NORMAL, SIGMA_LOG_NORMAL),
     logNormal(x, L0_PLOEG_FIT, SIGMA_PLOEG_FIT),
+    logNormal(x, L0_GAUTAM_FIT, SIGMA_GAUTAM_FIT),
     [nptf(l, N_BELOW_NFW, N_ABOVE_NFW, L_BREAK_NFW) for l in x],
     [nptf(l, N_BELOW_DISK, N_ABOVE_DISK, L_BREAK_DISK) for l in x],
 ]
-names = ["Power law", "GCL Log normal", "GCE Log normal fit", "NPTF NFW PS", "NPTF Disk PS"]
-styles = ["solid", "dashed", "dashed", "solid", "dotted", "dotted"]
+names = ["Power law", "Log normal GCL", "Log normal GCE", "Log normal AIC", "NPTF NFW PS", "NPTF Disk PS"]
+styles = ["solid", "dashed", "dashed", "dashed", "dotted", "dotted"]
 colors = ["blue", "orange", "purple", "red", "fuchsia", "slategray"]
 
 for i in range(len(ys)):
-    ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i], 
+    ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i],
         c=colors[i])
-#ax1.axvline(x=L_THRESH, color='k') 
+#ax1.axvline(x=L_THRESH, color='k')
 
 ax1.legend(loc='upper left')
 plt.tight_layout()
@@ -92,13 +95,13 @@ plt.show()
 
 fig, ax1 = plt.subplots()
 
-ax1.set_xlabel("Luminosity $L$ [ergs/s]")
+ax1.set_xlabel("Luminosity $L$ [erg / s]")
 ax1.set_ylabel("$L\\frac{dN}{dL}$")
 ax1.set_xscale('log')
 
 ax2 = ax1.twiny()
 
-ax2.set_xlabel("Flux $F$ [ergs/cm$^2$/s]")
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
 
 ax1.callbacks.connect("xlim_changed", convert_ax2)
 
@@ -107,10 +110,39 @@ ys = [x * y for y in ys]
 for i in range(len(ys)):
     ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i],
     c=colors[i])
-#ax1.axvline(x=L_THRESH, color='k')  
+#ax1.axvline(x=L_THRESH, color='k')
 
 ax1.legend(loc='upper left')
 plt.tight_layout()
 
 plt.savefig("l-lum-funcs.pdf")
+plt.show()
+
+
+
+
+
+fig, ax1 = plt.subplots()
+
+ax1.set_xlabel("Luminosity $L$ [erg / s]")
+ax1.set_ylabel("$L^2\\frac{dN}{dL}$")
+ax1.set_xscale('log')
+
+ax2 = ax1.twiny()
+
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
+
+ax1.callbacks.connect("xlim_changed", convert_ax2)
+
+ys = [x * y for y in ys]
+
+for i in range(len(ys)):
+    ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i],
+    c=colors[i])
+#ax1.axvline(x=L_THRESH, color='k')
+
+ax1.legend(loc='upper left')
+plt.tight_layout()
+
+plt.savefig("l2-lum-funcs.pdf")
 plt.show()

@@ -117,11 +117,11 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, lMaxVals, lMinVals, True)
 
 # Final points
 
-plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', markersize=6)
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR),
                 Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None'),]
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None', markersize=6),]
 plt.legend(custom_lines, ["$N_r=47$", "$R_r=0.2$", "Fermilab point"], loc='lower right')
 plt.xlim(lMaxVals[0], lMaxVals[-1])
 plt.ylim(lMinVals[0], lMinVals[-1])
