@@ -119,7 +119,7 @@ for mult in [1, 2, 5, 10]:
     shade(axs[i], numSeen, NUM_PULSARS_ABOVE_THRESHOLD, alphaVals, lMaxVals)
     shade(axs[i], lumSeen, FRAC_ABOVE_THRESHOLD, alphaVals, lMaxVals, True)
 
-    axs[i].plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
+    axs[i].plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', markersize=6)
     i += 1
 
 cbar = axs[-1].cax.colorbar(c1)
@@ -127,7 +127,7 @@ cbar.set_label("$N_\\textrm{GCE}$")
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR),
                 Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None'),]
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='None', markersize=6),]
 axs[-1].legend(custom_lines, ["$N_r=47$", "$R_r=0.2$", "Fermilab point"],
     loc='lower left')
 plt.tight_layout()

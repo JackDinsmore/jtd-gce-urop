@@ -127,14 +127,14 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, lMaxVals, lMinVals, True)
 
 # Final points
 
-plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', markersize=6)
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR, linestyle=STYLES[0], lw=2),
                 Line2D([0], [0], color='k', linestyle=STYLES[1], lw=1),
                 Line2D([0], [0], color='k', linestyle=STYLES[2], lw=1),
                 Line2D([0], [0], color='k', linestyle=STYLES[3], lw=1),
                 Line2D([0], [0], color=LINE_COLOR, linestyle='dashed', lw=2, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='none'),]
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='o', linestyle='none', markersize=6),]
 plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$', "Fermilab"], loc="lower right")
 plt.xlim(lMaxVals[0], lMaxVals[-1])
 plt.ylim(lMinVals[0], lMinVals[-1])

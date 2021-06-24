@@ -16,7 +16,9 @@ typedef std::vector<std::vector<double>> DoubleVector;
 /* When LOTS_OF_THREADS is defined, a target of 80-90 threads are made and run concurrently.
    Otherwise, four threads are made and run concurrently. */
 
-#define SENSITIVITY_DIVISOR 1.0
+#define INVALID -3789213.4812047 // A random number designed to encode an invalid input.
+
+#define SENSITIVITY_DIVISOR 5.0
 
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001
@@ -38,6 +40,8 @@ typedef std::vector<std::vector<double>> DoubleVector;
 #define SIGMA_HIST 0.62
 #define L0_PLOEG_HIST 1.6084e+32
 #define SIGMA_PLOEG_HIST 0.7003
+#define L0_GAUTAM_HIST 3.91983577e+32
+#define SIGMA_GAUTAM_HIST 0.937184991
 #define NPTF_L_BREAK_HIST 8.656487610122969e+33
 #define NPTF_N_1_HIST -0.66
 #define NPTF_N_2_HIST 18.2
@@ -55,6 +59,7 @@ const double SIGMA_RANGE[2] = { 0.001, 1 };
 const double fermilabPaperPoint[2] = { 1e35, 1e29 };
 const double logNormalPaperPoint[2] = { 0.88e34, 0.62 };
 const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
+const double logNormalGautamPoint[2] = { 3.91983577e+32, 0.937184991 };
 
 // Values for the computation of the integral of the NFW profile.
 #define GAMMA 1.2
@@ -85,6 +90,7 @@ enum class LUMINOSITY_FUNCTION {
     POWER_LAW,
     LOG_NORMAL,
     PLOEG,
+    GAUTAM,
     NPTF,
     POWER_LAW_ALPHA,
     ERROR,
@@ -331,20 +337,23 @@ double integrate(double start, double arg1, double arg2) {// arg1, arg2; l0, sig
     default:
         std::cout << "Running integrate with an invalid luminosity function." << std::endl;
         std::cin.get();
+        return 0;
     }
 }
 
 double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, sigma
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        if (start == NULL) { start = arg1; }
+        if (start == INVALID) { start = arg1; }
         return arg2 * improvedGamma(2 - ALPHA, start / arg2) / improvedGamma(1 - ALPHA, arg1 / arg2);
     case LUMINOSITY_FUNCTION::LOG_NORMAL:
-        if (start == NULL) { start = 0; }
-        return 0.5 * arg1 * exp(arg2 * arg2 * log(10)*log(10) / 2) * (1 - erf((log10(start) - log10(arg1) - arg2 * arg2 * log(10)) / (sqrt(2) * arg2)));
     case LUMINOSITY_FUNCTION::PLOEG:
-        if (start == NULL) { start = pow(10, ploegData.logxs[0]) * ONE_PLUS_EPSILON; }
-        return ploegData.lintegrate(start);
+    case LUMINOSITY_FUNCTION::GAUTAM:
+        if (start == INVALID) { start = 0; }
+        return 0.5 * arg1 * exp(arg2 * arg2 * log(10)*log(10) / 2) * (1 - erf((log10(start) - log10(arg1) - arg2 * arg2 * log(10)) / (sqrt(2) * arg2)));
+    //case LUMINOSITY_FUNCTION::PLOEG:
+    //    if (start == INVALID) { start = pow(10, ploegData.logxs[0]) * ONE_PLUS_EPSILON; }
+    //    return ploegData.lintegrate(start);
     case LUMINOSITY_FUNCTION::NPTF:
         if (start < nptfLBreak) {
             return nptfPremul * nptfLBreak * (1 - arg1) * (1-arg2) * (1 / ((arg1-2) * (arg2-2)) + pow(nptfLBreak / start, arg1 - 2) / ((arg1 - 2) * (arg1 - arg2)));
@@ -353,11 +362,12 @@ double lintegrate(double start, double arg1, double arg2) {// lMin, lMax; l0, si
         return nptfPremul * nptfLBreak * (1 - arg1) * (1 - arg2) * (pow(nptfLBreak / start, arg2 - 2) / ((arg2 - 2) * (arg1 - arg2)));
         }
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        if (start == NULL) { start = L_MIN; }
+        if (start == INVALID) { start = L_MIN; }
         return arg2 * improvedGamma(2 - arg1, start / arg2) / improvedGamma(1 - arg1, L_MIN / arg2);
     default:
         std::cout << "Running integrate with an invalid luminosity function." << std::endl;
         std::cin.get();
+        return 0;
     }
 }
 
@@ -375,7 +385,7 @@ double fluxSeenFunc(double threshold, double arg1, double arg2) {// Returns(unsc
 }
 
 double totalFluxFunc(double threshold, double arg1, double arg2) {// Returns(unscaled) total luminosity
-    return lintegrate(NULL, arg1, arg2);
+    return lintegrate(INVALID, arg1, arg2);
 }
 
 
@@ -459,6 +469,9 @@ std::array<double, FLUX_HIST_BINS> getHistAtLatLon(CoordPair latLon, double flux
                 break;
             case LUMINOSITY_FUNCTION::PLOEG:
                 prob = log10(exp(1)) / (SIGMA_PLOEG_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_PLOEG_HIST), 2) / (2 * SIGMA_PLOEG_HIST * SIGMA_PLOEG_HIST));
+                break;
+            case LUMINOSITY_FUNCTION::GAUTAM:
+                prob = log10(exp(1)) / (SIGMA_GAUTAM_HIST * sqrt(2 * pi) * lum) * exp(-pow(log10(lum) - log10(L0_GAUTAM_HIST), 2) / (2 * SIGMA_GAUTAM_HIST * SIGMA_GAUTAM_HIST));
                 break;
 
             case LUMINOSITY_FUNCTION::NPTF:
@@ -744,12 +757,20 @@ int logNormal() {
         + "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, logNormalPloegPoint[0], logNormalPloegPoint[1]) * ploegScale)
         + "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, logNormalPloegPoint[0], logNormalPloegPoint[1]) * ploegScale / FLUX_EXCESS) + "\n";
 
+    double gautamScale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, logNormalGautamPoint[0], logNormalGautamPoint[1]);
+    std::string gautamText = "Gautam values: (l0 = " + sciNot(logNormalGautamPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalGautamPoint[1]) + ")\n"
+        + "\tTotal number of pulsars: " + sciNot(getValueAtConfig(VALUE::TOTAL_NUM, logNormalGautamPoint[0], logNormalGautamPoint[1]) * gautamScale)
+        + "\n\tNumber of visible pulsars: " + sciNot(getValueAtConfig(VALUE::SEEN_NUM, logNormalGautamPoint[0], logNormalGautamPoint[1]) * gautamScale)
+        + "\n\tFraction of seen luminosity: " + sciNot(getValueAtConfig(VALUE::SEEN_FLUX, logNormalGautamPoint[0], logNormalGautamPoint[1]) * gautamScale / FLUX_EXCESS) + "\n";
+
     std::cout << paperText << std::endl;
     std::cout << ploegText << std::endl;
+    std::cout << gautamText << std::endl;
     std::ofstream recordFile;
     recordFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/record.txt");
     recordFile << paperText << std::endl;
     recordFile << ploegText << std::endl;
+    recordFile << gautamText << std::endl;
 
     // Generate unscaled data
     DoubleVector totalNum, numSeen, fluxSeen, totalFlux;
@@ -893,6 +914,9 @@ int hist() {
     case LUMINOSITY_FUNCTION::PLOEG:
         std::cout << "Using a log normal luminosity function (Ploeg)" << std::endl << std::endl;
         break;
+    case LUMINOSITY_FUNCTION::GAUTAM:
+        std::cout << "Using a log normal luminosity function (Gautam)" << std::endl << std::endl;
+        break;
     case LUMINOSITY_FUNCTION::NPTF:
         std::cout << "Using an NPTF luminosity function" << std::endl << std::endl;
         break;
@@ -935,6 +959,9 @@ int hist() {
     case LUMINOSITY_FUNCTION::PLOEG:
         scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, L0_PLOEG_HIST, SIGMA_PLOEG_HIST);
         break;
+    case LUMINOSITY_FUNCTION::GAUTAM:
+        scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, L0_GAUTAM_HIST, SIGMA_GAUTAM_HIST);
+        break;
     case LUMINOSITY_FUNCTION::NPTF:
         scale = FLUX_EXCESS / getValueAtConfig(VALUE::TOTAL_FLUX, NPTF_N_1_HIST, NPTF_N_2_HIST);
         break;
@@ -962,6 +989,10 @@ int hist() {
     case LUMINOSITY_FUNCTION::PLOEG:
         histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/ploeg/flux-hist.txt");
         histFile << "L0 = " << L0_PLOEG_HIST << ", sigma = " << SIGMA_PLOEG_HIST << std::endl;
+        break;
+    case LUMINOSITY_FUNCTION::GAUTAM:
+        histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/gautam/flux-hist.txt");
+        histFile << "L0 = " << L0_GAUTAM_HIST << ", sigma = " << SIGMA_GAUTAM_HIST << std::endl;
         break;
     case LUMINOSITY_FUNCTION::NPTF:
         histFile.open(ROOT "luminosity-models-position/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/flux-hist.txt");
@@ -996,6 +1027,9 @@ int main(int argc, char** argv) {
         }
         else if (strcmp(argv[2], "ploeg") == 0) {
             luminosityFunction = LUMINOSITY_FUNCTION::PLOEG;
+        }
+        else if (strcmp(argv[2], "gautam") == 0) {
+            luminosityFunction = LUMINOSITY_FUNCTION::GAUTAM;
         }
         else if (strcmp(argv[2], "nptf") == 0) {
             luminosityFunction = LUMINOSITY_FUNCTION::NPTF;

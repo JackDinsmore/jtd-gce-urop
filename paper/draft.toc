@@ -4,13 +4,12 @@
 \contentsline {subsection}{\numberline {2.2}Observables}{2}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}Total GCE Luminosity}{3}{subsection.2.3}%
 \contentsline {subsection}{\numberline {2.4}Luminosity Functions}{4}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Sensitivity Models}{5}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.5}Sensitivity Models}{6}{subsection.2.5}%
 \contentsline {section}{\numberline {3}Results}{8}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Step function and position dependent sensitivity models}{8}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Smoothed sensitivity model}{8}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Flux distribution}{8}{subsection.3.3}%
-\contentsline {section}{\numberline {4}Future Sensitivity}{9}{section.4}%
-\contentsline {section}{\numberline {5}Conclusion}{11}{section.5}%
-\contentsline {section}{\numberline {A}Scaling of ROIs}{11}{appendix.A}%
-\contentsline {section}{\numberline {B}Conversion Between GCE Luminosity and Flux}{11}{appendix.B}%
+\contentsline {subsection}{\numberline {3.1}$N_\text {r}$, $R_\text {r}$, and $N_\text {GCE}$ for different luminosity functions}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Flux distribution}{8}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Future Sensitivity}{8}{section.4}%
+\contentsline {section}{\numberline {5}Conclusion}{10}{section.5}%
+\contentsline {section}{\numberline {A}Scaling of ROIs and Spectral Ranges}{10}{appendix.A}%
+\contentsline {section}{\numberline {B}Conversion Between GCE Luminosity and Flux}{12}{appendix.B}%
 \contentsline {section}{\numberline {C}Calculation of photon energy}{13}{appendix.C}%

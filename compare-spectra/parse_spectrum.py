@@ -276,7 +276,7 @@ class Spectrum:
         ax.plot(fitx, fity, color='C2', linestyle='-.')
 
     def get_x_label(self):
-        return "$\log \\frac{E}{1\\ \\mathrm{erg}}$"
+        return "$\log \\frac{E_\\gamma}{1\\ \\mathrm{erg}}$"
 
     def get_y_label(self):
-        return "$E^2 \\frac{dN}{dE}$ [erg / cm$^2$ / s]"
+        return "$F_\\gamma$ [erg / cm$^2$ / s]"

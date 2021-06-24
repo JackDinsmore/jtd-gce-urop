@@ -26,6 +26,7 @@ DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
+gautamPoint = [3.91983577e+32, 0.937184991]
 SHADE_SCALE=25
 
 def get_path(mult):
@@ -113,8 +114,12 @@ for mult in [1, 2, 5, 10]:
     axs[i].contour(xVals, yVals, numSeen, [NUM_PULSARS_ABOVE_THRESHOLD], colors=[LINE_COLOR])
     axs[i].contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
-    axs[i].plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^')
-    axs[i].plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
+    axs[i].plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', markersize=6)
+    axs[i].errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[0.41e34], [0.79e34]], yerr=[[0.16], [0.15]], linewidth=1, color=LINE_COLOR)
+    axs[i].plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', markersize=6)
+    axs[i].errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[4.1304e+31], [4.1304e+31]], yerr=[[0.01011908], [0.01011908]], linewidth=1, color="fuchsia")
+    axs[i].plot(gautamPoint[0], gautamPoint[1], markeredgecolor='black', markerfacecolor="red", marker='*', markersize=8)
+    axs[i].errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[3.0842e+31], [3.0842e+31]], yerr=[[0.00316971], [0.00316971]], linewidth=1, color="red")
 
     # Observation
     shade(axs[i], numSeen, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
@@ -127,10 +132,11 @@ cbar.set_label("$N_\\textrm{GCE}$")
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR),
                 Line2D([0], [0], color=LINE_COLOR, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
-                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="red", marker='*', linestyle='None', markersize=8),]
 axs[-1].legend(custom_lines,
-    ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "GLC", "GCE"],
+    ['$N_\\textrm{r} = 47$', '$R_\\textrm{r}=0.2$', "GLC", "GCE", "AIC"],
     loc="lower left")
 fig.tight_layout()
 

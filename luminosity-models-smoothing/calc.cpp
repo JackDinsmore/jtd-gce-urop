@@ -6,6 +6,8 @@
 #include <sstream>
 #include <thread>
 #include <future>
+#include <math.h>
+#include <cmath>
 #include <boost/math/special_functions/gamma.hpp>
 
 #define INVALID -3789213.4812047 // A random number designed to encode an invalid input.
@@ -44,9 +46,12 @@ typedef std::vector<std::vector<double>> DoubleVector;
 #define NPTF_N_1_HIST -0.66
 #define NPTF_N_2_HIST 18.2
 
-#define START_FLUX_INTEGRAL 1.0e-12
-#define STOP_FLUX_INTEGRAL 1.0e-8
-#define NUM_FLUX_STEPS 1e3
+#define START_LUM_POWER 28
+#define STOP_LUM_POWER 36
+#define NUM_LUM_STEPS 1e5
+
+#define K_TH 0.45
+#define SIGMA_TH 0.28
 
 
 
@@ -61,6 +66,7 @@ const double SIGMA_RANGE[2] = { 0.001, 1 };
 const double fermilabPaperPoint[2] = { 1e35, 1e29 };
 const double logNormalPaperPoint[2] = { 0.88e34, 0.62 };
 const double logNormalPloegPoint[2] = { 1.6084e+32, 0.7003 };
+const double logNormalGautamPoint[2] = { 3.91983577e+32, 0.937184991 };
 
 // Values for the computation of the integral of the NFW profile.
 #define GAMMA 1.2
@@ -238,71 +244,73 @@ double sensitivity(double flux, double threshold) {
     if (threshold == INVALID) {
         return 1.0;
     }
-    if (flux > threshold) {
-        return 1.0;
-    }
-    return 0.0;
+    return 0.5 * (1 + erf((log10(flux) - (log10(threshold) + K_TH)) / (sqrt(2) * SIGMA_TH)));
 }
 
 double integrate(double threshold, double distance, double arg1, double arg2) {
     // lMin, lMax; l0, sigma; nBelow, nAbove
     double integral = 0;
-    double start_flux_integral;
+    double start_power;
+    const double flux_to_lum = (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        start_flux_integral = arg1 / (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
+        start_power = log10(arg1);
         break;
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        start_flux_integral = L_MIN / (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
+        start_power = log10(L_MIN);
         break;
     default:
-        start_flux_integral = START_FLUX_INTEGRAL;
+        start_power = START_LUM_POWER;
         break;
     }
-    double step_width = (STOP_FLUX_INTEGRAL - start_flux_integral) /
-        NUM_FLUX_STEPS;
-    for (double flux = start_flux_integral;
-        flux < STOP_FLUX_INTEGRAL;
-        flux += step_width) {
+    const double step_width = double(STOP_LUM_POWER - start_power) /
+        NUM_LUM_STEPS;
+    double sensitivity_multiplier, lum, width;
 
-        double sensitivity_multiplier = sensitivity(flux, threshold);
-        double lum = flux * (4 * PI * distance * distance);
-        integral += sensitivity_multiplier * stripped_lum_func(lum, arg1, arg2);
+    for (double power = start_power; power < STOP_LUM_POWER;
+        power += step_width) {
+
+        lum = pow(10, power);
+        width = pow(10, power + step_width) - lum;
+        sensitivity_multiplier = sensitivity(lum / flux_to_lum, threshold);
+        integral += sensitivity_multiplier * stripped_lum_func(lum, arg1, arg2)
+            * width;
     }
 
-    return integral * step_width * get_lum_func_strip(arg1, arg2);
+    return integral * get_lum_func_strip(arg1, arg2);
 }
 
 double lintegrate(double threshold, double distance, double arg1, double arg2) {
     // lMin, lMax; l0, sigma; nBelow, nAbove
     double integral = 0;
-    double start_flux_integral;
-    double flux_to_lum = (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
+    double start_power;
+    const double flux_to_lum = (4 * PI * distance * distance * CM_PER_KPC_SQUARED);
     switch (luminosityFunction) {
     case LUMINOSITY_FUNCTION::POWER_LAW:
-        start_flux_integral = arg1 / flux_to_lum;
+        start_power = log10(arg1);
         break;
     case LUMINOSITY_FUNCTION::POWER_LAW_ALPHA:
-        start_flux_integral = L_MIN / flux_to_lum;
+        start_power = log10(L_MIN);
         break;
     default:
-        start_flux_integral = START_FLUX_INTEGRAL;
+        start_power = START_LUM_POWER;
         break;
     }
-    double step_width = (STOP_FLUX_INTEGRAL - start_flux_integral) /
-        NUM_FLUX_STEPS;
-    for (double flux = start_flux_integral;
-        flux < STOP_FLUX_INTEGRAL;
-        flux += step_width) {
+    const double step_width = double(STOP_LUM_POWER - start_power) /
+        NUM_LUM_STEPS;
+    double sensitivity_multiplier, lum, width;
 
-        double lum = flux * flux_to_lum;
-        double sensitivity_multiplier = sensitivity(flux, threshold);
+    for (double power = start_power; power < STOP_LUM_POWER;
+        power += step_width) {
+
+        lum = pow(10, power);
+        width = pow(10, power + step_width) - lum;
+        sensitivity_multiplier = sensitivity(lum / flux_to_lum, threshold);
         integral += sensitivity_multiplier * stripped_lum_func(lum, arg1, arg2)
-            * lum;
+            * width * lum;
     }
 
-    return integral * (step_width * flux_to_lum) *
-        get_lum_func_strip(arg1, arg2);
+    return integral * get_lum_func_strip(arg1, arg2);
 }
 
 
@@ -547,6 +555,9 @@ void generateLogNormalPlotMap(VALUE value, DoubleVector* plotMap) {
 // ========================= Generate data =========================
 int powerLaw() {
     std::cout << "Using a power law luminosity function" << std::endl << std::endl;
+
+    std::cout << integrate(0, 8.5, fermilabPaperPoint[1], fermilabPaperPoint[0]) << std::endl;
+
     std::future<double> raw_total_flux = std::async(std::launch::async,
         getValueAtConfig, VALUE::TOTAL_FLUX,
         fermilabPaperPoint[1], fermilabPaperPoint[0]);
@@ -714,16 +725,16 @@ int logNormal() {
 
     std::future<double> raw_total_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_FLUX,
-        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+        logNormalPaperPoint[0], logNormalPaperPoint[1]);
     std::future<double> raw_total_num = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_NUM,
-        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+        logNormalPaperPoint[0], logNormalPaperPoint[1]);
     std::future<double> raw_seen_num = std::async(std::launch::async,
         &getValueAtConfig, VALUE::SEEN_NUM,
-        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+        logNormalPaperPoint[0], logNormalPaperPoint[1]);
     std::future<double> raw_seen_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::SEEN_FLUX,
-        logNormalPaperPoint[1], logNormalPaperPoint[0]);
+        logNormalPaperPoint[0], logNormalPaperPoint[1]);
     double paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string paperText = "Paper values: (l0 = " + sciNot(logNormalPaperPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPaperPoint[1]) + ")\n" +
         "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
@@ -735,16 +746,16 @@ int logNormal() {
 
     raw_total_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_FLUX,
-        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+        logNormalPloegPoint[0], logNormalPloegPoint[1]);
     raw_total_num = std::async(std::launch::async,
         &getValueAtConfig, VALUE::TOTAL_NUM,
-        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+        logNormalPloegPoint[0], logNormalPloegPoint[1]);
     raw_seen_num = std::async(std::launch::async,
         &getValueAtConfig, VALUE::SEEN_NUM,
-        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+        logNormalPloegPoint[0], logNormalPloegPoint[1]);
     raw_seen_flux = std::async(std::launch::async,
         &getValueAtConfig, VALUE::SEEN_FLUX,
-        logNormalPloegPoint[1], logNormalPloegPoint[0]);
+        logNormalPloegPoint[0], logNormalPloegPoint[1]);
     paperScale = FLUX_EXCESS / raw_total_flux.get();
     std::string ploegText = "Ploeg values: (l0 = " + sciNot(logNormalPloegPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalPloegPoint[1]) + ")\n" +
         "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
@@ -754,15 +765,40 @@ int logNormal() {
         "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
             paperScale / FLUX_EXCESS) + "\n";
 
+
+    raw_total_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_FLUX,
+        logNormalGautamPoint[0], logNormalGautamPoint[1]);
+    raw_total_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::TOTAL_NUM,
+        logNormalGautamPoint[0], logNormalGautamPoint[1]);
+    raw_seen_num = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_NUM,
+        logNormalGautamPoint[0], logNormalGautamPoint[1]);
+    raw_seen_flux = std::async(std::launch::async,
+        &getValueAtConfig, VALUE::SEEN_FLUX,
+        logNormalGautamPoint[0], logNormalGautamPoint[1]);
+    paperScale = FLUX_EXCESS / raw_total_flux.get();
+    std::string gautamText = "Gautam values: (l0 = " + sciNot(logNormalGautamPoint[0]) + " ergs/s, sigma = " + sciNot(logNormalGautamPoint[1]) + ")\n" +
+        "\tTotal number of pulsars: " + sciNot(raw_total_num.get() *
+            paperScale) +
+        "\n\tNumber of visible pulsars: " + sciNot(raw_seen_num.get() *
+            paperScale) +
+        "\n\tFraction of seen luminosity: " + sciNot(raw_seen_flux.get() *
+            paperScale / FLUX_EXCESS) + "\n";
+
+
     std::cout << paperText << std::endl;
     std::cout << ploegText << std::endl;
+    std::cout << gautamText << std::endl;
     std::ofstream recordFile;
     recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/log-normal/record.txt");
     recordFile << paperText << std::endl;
     recordFile << ploegText << std::endl;
+    recordFile << gautamText << std::endl;
 
     // Generate unscaled data
-    DoubleVector totalNum, numSeen, fluxSeen, totalFlux;
+    /*DoubleVector totalNum, numSeen, fluxSeen, totalFlux;
 
 #ifndef LOTS_OF_THREADS
     std::thread totalNumThread(generateLogNormalPlotMap, VALUE::TOTAL_NUM, &totalNum);
@@ -807,6 +843,7 @@ int logNormal() {
     system("python \"" ROOT "luminosity-models-smoothing/graph-log-normal.py\"");
     std::cin.get();
     return 1;
+    */
 }
 
 int ploeg() {
@@ -1002,9 +1039,9 @@ int main(int argc, char** argv) {
         else if (strcmp(argv[2], "lognormal") == 0) {
             luminosityFunction = LUMINOSITY_FUNCTION::LOG_NORMAL;
         }
-        else if (strcmp(argv[2], "ploeg") == 0) {
+        /*else if (strcmp(argv[2], "ploeg") == 0) {
             luminosityFunction = LUMINOSITY_FUNCTION::PLOEG;
-        }
+        }*/
         else if (strcmp(argv[2], "nptf") == 0) {
             luminosityFunction = LUMINOSITY_FUNCTION::NPTF;
         }

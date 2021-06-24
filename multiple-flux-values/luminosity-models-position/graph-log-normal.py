@@ -33,6 +33,7 @@ DRAW_PLOEG_POINT = True
 
 paperPoint = [0.88e34, 0.62]
 ploegPoint = [10**32.206, 0.70585]
+gautamPoint = [3.91983577e+32, 0.937184991]
 SHOW_NUMBERS = False
 
 PATH_TO_FILE = "/home/jtdinsmo/Dropbox (MIT)/GCE UROP/luminosity-models-position/data-1x/log-normal/"
@@ -133,8 +134,12 @@ shade(lumSeen, FRAC_ABOVE_THRESHOLD, xVals, yVals, True)
 
 # Final points
 
-plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor="C1", marker='^')
-plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="C6", marker='s')
+plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', markersize=6)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[0.41e34], [0.79e34]], yerr=[[0.16], [0.15]], linewidth=1, color=LINE_COLOR)
+plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', markersize=6)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[4.1304e+31], [4.1304e+31]], yerr=[[0.01011908], [0.01011908]], linewidth=1, color="fuchsia")
+plt.plot(gautamPoint[0], gautamPoint[1], markeredgecolor='black', markerfacecolor="red", marker='*', markersize=8)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[3.0842e+31], [3.0842e+31]], yerr=[[0.00316971], [0.00316971]], linewidth=1, color="red")
 
 
 custom_lines = [Line2D([0], [0], color=LINE_COLOR, linestyle=STYLES[0], lw=2),
@@ -142,9 +147,10 @@ custom_lines = [Line2D([0], [0], color=LINE_COLOR, linestyle=STYLES[0], lw=2),
                 Line2D([0], [0], color='k', linestyle=STYLES[2], lw=1),
                 Line2D([0], [0], color='k', linestyle=STYLES[3], lw=1),
                 Line2D([0], [0], color=LINE_COLOR, linestyle='dashed', lw=2, dashes=(4, 2)),
-                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None'),
-                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None'),]
-plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$', "GCL", "GCE"], loc="lower left")
+                Line2D([], [], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="C6", marker='s', linestyle='None', markersize=6),
+                Line2D([], [], markeredgecolor='black', markerfacecolor="red", marker='*', linestyle='None', markersize=8),]
+plt.legend(custom_lines, ['$N_r$ Di Mauro', "$N_r$ Fermilab gNFW", "$N_r$ Abazajian", "$N_r$ Ajello", '$R_r$', "GCL", "GCE", "AIC"], loc="lower left")
 plt.xlim(xVals[0], xVals[-1])
 plt.ylim(yVals[0], yVals[-1])
 

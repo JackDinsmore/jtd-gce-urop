@@ -33,15 +33,15 @@ def sci_not(i):
 
 class Data:
     def __init__(self, name, filename, bar_bottom, bar_top, convert_x_to_log=False,
-        convert_y_to_log=False, convert_to_flux=False, convert_to_ergs=False):
+        convert_y_to_log=False, convert_to_lum=False, convert_to_ergs=False):
 
         self.name = name
         xs, ys = self.get_data(filename, convert_x_to_log,
-            convert_y_to_log, convert_to_flux, convert_to_ergs)
+            convert_y_to_log, convert_to_lum, convert_to_ergs)
         xdown, ydown = self.get_data(bar_bottom, convert_x_to_log,
-            convert_y_to_log, convert_to_flux, convert_to_ergs)
+            convert_y_to_log, convert_to_lum, convert_to_ergs)
         xup, yup = self.get_data(bar_top, convert_x_to_log,
-            convert_y_to_log, convert_to_flux, convert_to_ergs)
+            convert_y_to_log, convert_to_lum, convert_to_ergs)
         min_x = max(np.min(xs), np.min(xdown), np.min(xup))
         max_x = min(np.max(xs), np.max(xdown), np.max(xup))
         if min_x >= max_x:
@@ -125,7 +125,7 @@ class Data:
 
 
     def get_data(self, filename, convert_x_to_log, convert_y_to_log,
-        convert_to_flux, convert_to_ergs):
+        convert_to_lum, convert_to_ergs):
 
         xs = []
         ys = []
@@ -139,8 +139,9 @@ class Data:
             if convert_x_to_log:
                 x = np.log10(x)
             if convert_y_to_log:
+                if y <= 0: continue
                 y = np.log10(y)
-            if convert_to_flux:
+            if convert_to_lum:
                 x -= np.log10(LUM_TO_FLUX)
             if convert_to_ergs:
                 raise Exception("Unimplemented")
@@ -159,8 +160,15 @@ class Data:
 
         return (ys[i+1] - ys[i]) * (x - xs[i]) / (xs[i+1] - xs[i]) + ys[i]
 
-d = Data("Gautam", "gautam/orange.csv", "gautam/bottom-band.csv", "gautam/top-band.csv",
-    convert_to_flux=True)
-print(d.fit_log_normal())
-d.plot()
+gautam = Data("Gautam", "gautam/orange.csv", "gautam/bottom-band.csv", "gautam/top-band.csv",
+    convert_to_lum=True)
+print(gautam.fit_log_normal())
+fig = gautam.plot()
+fig.savefig("gautam-fit.pdf")
+
+ploeg = Data("Ploeg", "ploeg/points.csv", "ploeg/bars-bottom.csv", "ploeg/bars-top.csv",
+    convert_y_to_log=True)
+print(ploeg.fit_log_normal())
+fig = ploeg.plot()
+fig.savefig("ploeg-fit.pdf")
 plt.show()

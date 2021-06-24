@@ -118,8 +118,11 @@ if(DRAW_EXTRA_CONTOURS):
 plt.contour(xVals, yVals, lumSeen, [FRAC_ABOVE_THRESHOLD], colors=[LINE_COLOR], linestyles='dashed')
 
 plt.plot(paperPoint[0], paperPoint[1], markeredgecolor='black', markerfacecolor=LINE_COLOR, marker='^', markersize=6)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[0.41e34], [0.79e34]], yerr=[[0.16], [0.15]], linewidth=1, color=LINE_COLOR)
 plt.plot(ploegPoint[0], ploegPoint[1], markeredgecolor='black', markerfacecolor="fuchsia", marker='s', markersize=6)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[4.1304e+31], [4.1304e+31]], yerr=[[0.01011908], [0.01011908]], linewidth=1, color="fuchsia")
 plt.plot(gautamPoint[0], gautamPoint[1], markeredgecolor='black', markerfacecolor="red", marker='*', markersize=8)
+plt.errorbar([paperPoint[0]], [paperPoint[1]], xerr=[[3.0842e+31], [3.0842e+31]], yerr=[[0.00316971], [0.00316971]], linewidth=1, color="red")
 
 # Observation
 shade(numSeen, NUM_PULSARS_ABOVE_THRESHOLD, xVals, yVals)
