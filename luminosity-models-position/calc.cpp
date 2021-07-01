@@ -18,7 +18,7 @@ typedef std::vector<std::vector<double>> DoubleVector;
 
 #define INVALID -3789213.4812047 // A random number designed to encode an invalid input.
 
-#define SENSITIVITY_DIVISOR 5.0
+#define SENSITIVITY_DIVISOR 10.0
 
 #define pi 3.14159265358979323
 #define ONE_PLUS_EPSILON 1.0000000001

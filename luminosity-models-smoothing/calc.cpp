@@ -244,6 +244,8 @@ double sensitivity(double flux, double threshold) {
     if (threshold == INVALID) {
         return 1.0;
     }
+    //if (flux < threshold) {return 0.0;}
+    //return 1.0;
     return 0.5 * (1 + erf((log10(flux) - (log10(threshold) + K_TH)) / (sqrt(2) * SIGMA_TH)));
 }
 
@@ -915,7 +917,7 @@ int nptf() {
         + "\n\tFraction of seen luminosity: " + sciNot(fracFluxScaled) + "\n";
 
     std::cout << nptfText << std::endl; std::ofstream recordFile;
-    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/record.txt");
+    recordFile.open(ROOT "luminosity-models-smoothing/data-" + std::to_string((int)SENSITIVITY_DIVISOR) + "x/nptf/record-step.txt");
     recordFile << nptfText << std::endl;
 
     std::cin.get();

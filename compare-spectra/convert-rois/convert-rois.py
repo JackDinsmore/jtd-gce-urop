@@ -1,19 +1,7 @@
-'''
-Method:
-    By integrating the NFW distribution over space, I'm going to calculate
-    the number of particles present in a given ROI and divide by the
-    number of particles present in my ROI. I will use this factor to
-    convert fluxes, under the assumption that the flux goes like the
-    number of sources.
-'''
-
-'''Convert a GCE luminosity to a flux, assuming an NFW-squared distributed
-pattern of pulsars with delta function luminosity. See Jan summary for
-calculation.'''
-
 from math import pi, cos, sqrt
+import numpy as np
 
-DELTA_ANGLE = 0.001
+DELTA_ANGLE = 0.01
 DELTA_S = 0.01
 R_C=8.5
 R_S=20
@@ -22,38 +10,90 @@ INTEGRAL_LIMIT=100
 def NFWSquared(r, gamma):
     return ((r/R_S)**(-gamma) * (1 + r/R_S)**(-3+gamma))**2
 
-def calculateIntegral(maxB, minB, maxL, gamma):# Give angles in units of degrees
+def get_ring(ring, minB, gamma):
+    if ring < minB:
+        return 0
     integral = 0
-    b = -maxB * pi / 180.0
-    while b < maxB * pi / 180.0:
+
+    b = 0
+    l = ring
+    while b < ring:
         volumeElement = cos(b) * DELTA_ANGLE * DELTA_ANGLE * DELTA_S
-        l = -maxL * pi / 180.0
-        if abs(b) < minB * pi / 180.0:
+        if b < minB:
             b += DELTA_ANGLE
             continue
-        while l < maxL * pi / 180.0:
-            s=0
-            while s < INTEGRAL_LIMIT:
-                r = sqrt(R_C*R_C + s * s - 2 * R_C * s * cos(b) * cos(l))
-                integral += NFWSquared(r, gamma) * volumeElement
+        s=0
+        while s < INTEGRAL_LIMIT:
+            r = sqrt(R_C*R_C + s * s - 2 * R_C * s * cos(b) * cos(l))
+            if r == 0:
                 s += DELTA_S
-            l += DELTA_ANGLE
+                continue
+            integral += NFWSquared(r, gamma) * volumeElement
+            s += DELTA_S
         b += DELTA_ANGLE
+
+    b = ring
+    l = 0
+    volumeElement = cos(b) * DELTA_ANGLE * DELTA_ANGLE * DELTA_S
+    while l <= ring:
+        s=0
+        while s < INTEGRAL_LIMIT:
+            r = sqrt(R_C*R_C + s * s - 2 * R_C * s * cos(b) * cos(l))
+            if r == 0:
+                s += DELTA_S
+                continue
+            integral += NFWSquared(r, gamma) * volumeElement
+            s += DELTA_S
+        l += DELTA_ANGLE
+
+    if ring == 0:
+        # Do not multiply by four; there is only one zero pixel
+        return integral
+
+    # The edges of the quadrant are doubled. Remove them
+    volumeElement1 = cos(ring) * DELTA_ANGLE * DELTA_ANGLE * DELTA_S\
+        + DELTA_ANGLE * DELTA_ANGLE * DELTA_S
+    s=0
+    while s < INTEGRAL_LIMIT:
+        r = sqrt(R_C*R_C + s * s - 2 * R_C * s * cos(ring))
+        if r == 0:
+            s += DELTA_S
+            continue
+        integral -= 0.5 * NFWSquared(r, gamma) * volumeElement
+        s += DELTA_S
+
+    return 4 * integral
+
+def get_rings(maxB, minB, gamma):# Give angles in units of degrees
+    rings = np.arange(0, maxB * pi / 180, DELTA_ANGLE)
+    return rings, [get_ring(r, minB * pi / 180, gamma) for r in rings]
+
+def get_roi(angle, rings, nums):
+    integral = 0
+    for i, r in enumerate(rings):
+        if r < angle * pi / 180:
+            integral += nums[i]
     return integral
 
-my_ROI = calculateIntegral(20, 2, 20, 1.2)
-my_ROI_Abazajian = calculateIntegral(20, 2, 20, 1.0)
-square_ROI = calculateIntegral(20, 0, 20, 1.2)
-fifteen_ROI = calculateIntegral(15, 0, 15, 1.2)
-ten_ROI = calculateIntegral(10, 0, 10, 1.2)
-five_ROI = calculateIntegral(5, 0, 5, 1.2)
-small_ROI = calculateIntegral(3.5, 0, 3.5, 1.2)
-small_ROI_Abazajian = calculateIntegral(3.5, 0, 3.5, 1.0)
+print("ROI 1/4")
+rings_mask, num_mask = get_rings(20, 2, 1.2)
+print(num_mask)
+print("ROI 2/4")
+rings_no_mask, num_no_mask = get_rings(20, 0, 1.2)
+print(num_no_mask)
+#print("ROI 3/4")
+#rings_mask_gamma, num_mask_gamma = get_rings(20, 2, 1.1)
+#print("ROI 4/4")
+#rings_no_mask_gamma, num_no_mask_gamma = get_rings(5, 0, 1.1)
 
-print("Gamma:", my_ROI_Abazajian / my_ROI)
-print("40x40 ROI factor:", square_ROI / my_ROI)
-print("30x30 ROI factor:", fifteen_ROI / my_ROI)
-print("20x20 ROI factor:", ten_ROI / my_ROI)
-print("10x10 ROI factor:", five_ROI / my_ROI)
-print("Abazajian ROI factor, gamma=1.2:", small_ROI / my_ROI)
-print("Abazajian ROI factor, gamma=1.0:", small_ROI_Abazajian / my_ROI_Abazajian)
+my_ROI = get_roi(20, rings_mask, num_mask)
+print("40x40 ROI factor:", get_roi(20, rings_no_mask, num_no_mask) / my_ROI)
+print("30x30 ROI factor:", get_roi(15, rings_no_mask, num_no_mask) / my_ROI)
+print("20x20 ROI factor:", get_roi(10, rings_no_mask, num_no_mask) / my_ROI)
+print("15x15 ROI factor:", get_roi(7.5, rings_no_mask, num_no_mask) / my_ROI)
+print("10x10 ROI factor:", get_roi(5, rings_no_mask, num_no_mask) / my_ROI)
+print("7x7 ROI factor:", get_roi(3.5, rings_no_mask, num_no_mask) / my_ROI)
+
+#my_ROI_Abazajian = get_roi(20, rings_mask_gamma, num_mask_gamma)
+#print("Gamma:", my_ROI_Abazajian / my_ROI)
+#print("7x7 ROI factor, gamma=1.1:", get_roi(3.5, rings_no_mask_gamma, num_no_mask_gamma) / my_ROI_Abazajian)

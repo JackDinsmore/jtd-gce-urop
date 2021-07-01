@@ -48,6 +48,10 @@ def nptf(x, n1, n2, LBreak):
         return (1 - n1) * (1 - n2) / (LBreak * (n1 - n2)) * (x/LBreak)**(-n1)
     else:
         return (1 - n1) * (1 - n2) / (LBreak * (n1 - n2)) * (x/LBreak)**(-n2)
+def lum_to_flux(lum):
+    return lum * LUM_TO_FLUX
+def flux_to_lum(flux):
+    return flux / LUM_TO_FLUX
 
 fig, ax1=plt.subplots()
 
@@ -56,17 +60,6 @@ ax1.set_ylabel("$\\frac{dN}{dL}$")
 ax1.set_xscale('log')
 
 x = 10**np.linspace(PLOT_LOG_MIN, PLOT_LOG_MAX, NUM_PLOT_POINTS)
-
-ax2 = ax1.twiny()
-
-ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
-
-def convert_ax2(ax1):
-    x1, x2 = ax1.get_xlim()
-    ax2.set_xlim(x1 * LUM_TO_FLUX, x2 * LUM_TO_FLUX)
-    ax2.figure.canvas.draw()
-
-ax1.callbacks.connect("xlim_changed", convert_ax2)
 
 ys = [
     powerLaw(x, L_MIN, L_MAX, ALPHA),
@@ -85,6 +78,9 @@ for i in range(len(ys)):
         c=colors[i])
 #ax1.axvline(x=L_THRESH, color='k')
 
+ax2 = ax1.secondary_xaxis('top', functions=(lum_to_flux, flux_to_lum))
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
+
 ax1.legend(loc='upper left')
 plt.tight_layout()
 
@@ -99,18 +95,15 @@ ax1.set_xlabel("Luminosity $L$ [erg / s]")
 ax1.set_ylabel("$L\\frac{dN}{dL}$")
 ax1.set_xscale('log')
 
-ax2 = ax1.twiny()
-
-ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
-
-ax1.callbacks.connect("xlim_changed", convert_ax2)
-
 ys = [x * y for y in ys]
 
 for i in range(len(ys)):
     ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i],
     c=colors[i])
 #ax1.axvline(x=L_THRESH, color='k')
+
+ax2 = ax1.secondary_xaxis('top', functions=(lum_to_flux, flux_to_lum))
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
 
 ax1.legend(loc='upper left')
 plt.tight_layout()
@@ -128,18 +121,14 @@ ax1.set_xlabel("Luminosity $L$ [erg / s]")
 ax1.set_ylabel("$L^2\\frac{dN}{dL}$")
 ax1.set_xscale('log')
 
-ax2 = ax1.twiny()
-
-ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
-
-ax1.callbacks.connect("xlim_changed", convert_ax2)
-
 ys = [x * y for y in ys]
 
 for i in range(len(ys)):
     ax1.plot(x, np.abs(ys[i]) / np.max(np.abs(ys[i])), label = names[i], linestyle=styles[i],
     c=colors[i])
 #ax1.axvline(x=L_THRESH, color='k')
+ax2 = ax1.secondary_xaxis('top', functions=(lum_to_flux, flux_to_lum))
+ax2.set_xlabel("Flux $F$ [erg / cm$^2$ / s]")
 
 ax1.legend(loc='upper left')
 plt.tight_layout()

@@ -6,7 +6,7 @@ import matplotlib.transforms as mtrans
 
 plt.style.use("jcap")
 
-SPECTRUM_RANGE = [0.5, 10]# GeV
+SPECTRUM_RANGE = [0.1, 100]# GeV
 NUM_PLOTS = 7
 SHAPES=['o', 's', '^', '*', 'd', '+', 'x']
 
@@ -43,7 +43,7 @@ for i in range(0, NUM_PLOTS):
     f.display_data(allax, color="C"+str(i), shape=SHAPES[i])
     f.display_data(ax)
     f.display_calore(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
-    #f.display_power_law(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
+    f.display_power_law(ax, SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     numerical_flux = f.get_numerical_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     calore_flux = f.get_calore_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
     fit_flux = f.get_power_law_flux(SPECTRUM_RANGE[0], SPECTRUM_RANGE[1])
@@ -59,7 +59,7 @@ for i in range(0, NUM_PLOTS):
 
     print(f.get_name(), numerical_flux)
 
-    ax.annotate("Num: {}\nCalore: {}\nFit: {}".format(sciNot(numerical_flux), sciNot(calore_flux), sciNot(fit_flux)), (0.2, 0.1), xycoords='axes fraction')
+    ax.annotate("Num: {}\nCalore: {}\nFit: {}".format(sciNot(numerical_flux), sciNot(calore_flux), sciNot(fit_flux)), (0.2, 0.1), xycoords='axes fraction', size=8)
 
 
 axes[(NUM_PLOTS-1)%3][(NUM_PLOTS-1)//3].set_xlabel(f.get_x_label())
@@ -79,12 +79,12 @@ x = np.arange(len(fit_fluxes))
 width = 0.25
 hist_fig, hist_ax = plt.subplots()
 hist_ax.bar(x, num_fluxes, width, label="Numerical")
-hist_ax.bar(x + width, calore_fluxes, width, label="Calore", hatch='////', linewidth=0.5)
-hist_ax.bar(x + 2 * width, fit_fluxes, width, label="Power law", hatch='\\\\\\\\', linewidth=0.5)
+hist_ax.bar(x + width, calore_fluxes, width, label="Ref [6] fit", hatch='////', linewidth=0.5)
+hist_ax.bar(x + 2 * width, fit_fluxes, width, label="Power law fit", hatch='\\\\\\\\', linewidth=0.5)
 hist_ax.legend()
 hist_ax.set_ylabel("$F_\\mathrm{GCE}$ [erg / cm$^2$ / s]")
 hist_ax.set_xticks(x + width)
-hist_ax.set_xticklabels(names, rotation=30)
+hist_ax.set_xticklabels(names, rotation=45, size=12)
 hist_fig.tight_layout()
 hist_fig.savefig("integral-hist.pdf")
 

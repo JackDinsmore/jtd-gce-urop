@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from lmfit import Model, Parameter, report_fit
 import scipy.optimize as optimization
+from scipy import stats
 
 plt.style.use("jcap")
 
@@ -66,11 +67,12 @@ class Data:
         if self.log_normal_results is not None:
             ax.plot(self.xs, log_normal(self.xs, self.log_normal_results[0],
             self.log_normal_results[2],self.log_normal_results[4]),
-            label="Log normal fit\n$L_0$={}$\pm${}, $\\sigma$={}$\pm${}".format(
+            label="Log normal fit\n$L_0$={}$\pm${}, $\\sigma$={}$\pm${}\n$p$={}".format(
                 sci_not(self.log_normal_results[2]),
                 sci_not(self.log_normal_results[3]),
                 sci_not(self.log_normal_results[4]),
-                sci_not(self.log_normal_results[5])))
+                sci_not(self.log_normal_results[5]),
+                sci_not(self.log_normal_p)))
 
     def label_axes(self, ax):
         ax.set_xlabel("$\\log(L / $ erg s$^{-1})$")
@@ -101,6 +103,7 @@ class Data:
             result.params["c"].value, result.params["c"].stderr,
             result.params["alpha"].value, result.params["alpha"].stderr,
             result.params["lmax"].value, result.params["lmax"].stderr)
+        self.power_law_p = 1 - stats.chi2.cdf(result.chisqr, len(self.ys)-3)
 
         return self.power_law_results
 
@@ -120,6 +123,7 @@ class Data:
             result.params["c"].value, result.params["c"].stderr,
             result.params["l0"].value, result.params["l0"].stderr,
             result.params["sigma"].value, result.params["sigma"].stderr)
+        self.log_normal_p = 1 - stats.chi2.cdf(result.chisqr, len(self.ys)-3)
 
         return self.log_normal_results
 

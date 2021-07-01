@@ -22,6 +22,7 @@ KAPPA = 0.5 # dist to center / r_s
 GAMMA = 1.2 # Shape facter of the NFW profile
 A = 1 # Something like the number of objects per cubic kiloparsec; in fact, it's the coefficient of the NFW number density
 CM_PER_KPC = 3.086e21
+FLUX_TO_LUM = 1.1093417307914119e-46
 
 DISPLAY_SIZE = 20.0
 THRESHOLD = 1e34
@@ -29,7 +30,7 @@ NUM_X_LABELS = 8
 NUM_Y_LABELS = 8
 
 def fluxToThresholdLuminosity(flux):
-    return flux * (4 * pi * (DIST_TO_CENTER * CM_PER_KPC) ** 2)
+    return flux / FLUX_TO_LUM #flux * (4 * pi * (DIST_TO_CENTER * CM_PER_KPC) ** 2)
 
 image_file = "detthresh_P8R3_source_10years_PL22.fits"
 
@@ -71,7 +72,7 @@ trimmed_lum_data = np.asarray(trimmed_lum_data)
 #mpl.rcParams["font.size"]=12
 
 # Display flux data:
-c = plt.imshow(trimmed_flux_data, 
+c = plt.imshow(trimmed_flux_data,
                    norm=colors.LogNorm(vmin=np.nanmin(trimmed_flux_data),
                    vmax=np.nanpercentile(trimmed_flux_data, 99)))
 cbar = plt.colorbar(c)
@@ -101,7 +102,7 @@ plt.savefig("flux-thresholds.pdf")
 # Display luminosity data
 
 plt.figure()
-c = plt.imshow(trimmed_lum_data, 
+c = plt.imshow(trimmed_lum_data,
                    norm=colors.LogNorm(vmin=np.nanmin(trimmed_lum_data),
                    vmax=np.nanpercentile(trimmed_lum_data, 99)))
 cbar = plt.colorbar(c)
@@ -117,9 +118,10 @@ yLabels = np.linspace(start=-DISPLAY_SIZE, stop=DISPLAY_SIZE, num=NUM_Y_LABELS+1
 np.append(yPositions, trimmed_flux_data.shape[0])
 plt.yticks(yPositions, [int(i) for i in yLabels])
 
+print(np.nanmin(trimmed_lum_data))
+
 plt.xlabel("$\\ell$ (deg)")
 plt.ylabel("$b$ (deg)")
 plt.tight_layout()
 plt.savefig("luminosity-thresholds.png")
 plt.show()
-

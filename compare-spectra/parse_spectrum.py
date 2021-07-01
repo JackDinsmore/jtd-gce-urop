@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import curve_fit
-import lmfit
+import lmfit, os
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -13,14 +13,14 @@ FERMILAB_NFW = 4
 ABAZAJIAN = 5
 GORDON = 6
 
-BANDS_OR_BARS = 'bands'# 'bars'
-
-ROI_SIZE = 0.428821318754
+MY_ROI_SIZE = 0.428821318754
+BIG_ROI_SIZE = 0.477550208734
 LM_FIT_SCALE = 1e9
 ERGS_PER_GEV = 0.00160218
-LARGE_ROI_FACTOR = 1.8248083080193496#2.101243483243096 # Compare 40x40 degree region to 40x40 with mask
-GORDON_ROI_FACTOR = 0.7432172914343479#1.0138798168363303 # Compare 7x7 with no mask to 40x40 with mask, with gamma=1.2
-ABAZAJIAN_ROI_FACTOR = 0.2912979297594549#0.4208269993877883 # Compare 7x7 with no mask to 40x40 with mask, with gamma=1
+LARGE_ROI_FACTOR = 1.8248083080193496 # Compare 40x40 degree region to 40x40 with mask
+GORDON_ROI_FACTOR = 0.7432172914343479 # Compare 7x7 with no mask to 40x40 with mask, with gamma=1.2
+ABAZAJIAN_ROI_FACTOR = 0.2912979297594549 # Compare 7x7 with no mask to 40x40 with mask, with gamma=1.1
+AJELLO_ROI_FACTOR = 1.2 # Compare 15x15 with no mask to 40x40 with mask, with gamma=1.2
 
 CALORE_L_BREAK, CALORE_ALPHA_BELOW, CALORE_ALPHA_ABOVE = 2.06 * ERGS_PER_GEV, 1.42, 2.63
 
@@ -34,23 +34,113 @@ def power_law(x, scale, alpha_below, alpha_above, l_break):
     alpha[10**x < l_break] = alpha_below
     return (10**x)**2 * scale * (10**x / l_break)**(-alpha) * LM_FIT_SCALE
 
-_files = { FERMILAB_GNFW:"fermilab-gnfw", CALORE:"calore", DI_MAURO:"di-mauro", AJELLO:"ajello", FERMILAB_NFW:"fermilab-nfw", ABAZAJIAN:"abazajian", GORDON:"gordon" }
+_files = {
+    FERMILAB_GNFW:"fermilab-gnfw",
+    CALORE:"calore",
+    DI_MAURO:"di-mauro",
+    AJELLO:"ajello",
+    FERMILAB_NFW:"fermilab-nfw",
+    ABAZAJIAN:"abazajian",
+    GORDON:"gordon"
+}
+_quadrature_unc = {
+    FERMILAB_GNFW: False,
+    CALORE: True,
+    DI_MAURO: False,
+    AJELLO: False,
+    FERMILAB_NFW: False,
+    ABAZAJIAN: False,
+    GORDON: True,
+}
 
 class Spectrum:
     def __init__(self, id):
+        self.id = id
+        self.calore_norm = None
+        self.fit_norm = None
+        self.fit_alpha_below = None
+        self.fit_alpha_above = None
+        self.fit_l_break = None
+
+        # Store x in log space, y in linear space.
+        # Both CSVs are assumed to be stored in log space
         self.pointsx, self.pointsy = self._load_csv("spectrum-data/"+_files[id]+'/points.csv')
-        try:
-            self.up_barsx, self.up_barsy = self._load_csv("spectrum-data/"+_files[id]+'/up-'+BANDS_OR_BARS + '.csv')
-            self.down_barsx, self.down_barsy = self._load_csv("spectrum-data/"+_files[id]+'/down-'+BANDS_OR_BARS + '.csv')
-        except: # There are no bands
+        if os.path.exists("spectrum-data/"+_files[id]+'/up-bands.csv')\
+            and os.path.exists("spectrum-data/"+_files[id]+'/down-bands.csv'):
+            up_bandsx, up_bandsy = self._load_csv("spectrum-data/"+_files[id]+'/up-bands.csv')
+            down_bandsx, down_bandsy = self._load_csv("spectrum-data/"+_files[id]+'/down-bands.csv')
+            if _quadrature_unc[id]:
+                up_barsx, up_barsy = self._load_csv("spectrum-data/"+_files[id]+'/up-bars.csv')
+                down_barsx, down_barsy = self._load_csv("spectrum-data/"+_files[id]+'/down-bars.csv')
+                xmin = max(np.min(up_barsx), np.min(up_bandsx), np.min(down_barsx), np.min(down_bandsx))
+                xmax = min(np.max(up_barsx), np.max(up_bandsx), np.max(down_barsx), np.max(down_bandsx))
+                self.up_barsx = []
+                self.up_barsy = []
+                self.down_barsx = []
+                self.down_barsy = []
+                for i, pointx in enumerate(self.pointsx):
+                    if pointx < xmin: continue
+                    if pointx > xmax: break
+                    up_bar = self._get_point(pointx, up_barsx, up_barsy)
+                    up_band = self._get_point(pointx, up_bandsx, up_bandsy)
+                    down_bar = self._get_point(pointx, down_barsx, down_barsy)
+                    down_band = self._get_point(pointx, down_bandsx, down_bandsy)
+                    self.up_barsx.append(pointx)
+                    self.down_barsx.append(pointx)
+                    self.up_barsy.append(np.sqrt((up_bar - self.pointsy[i])**2 + (up_band - self.pointsy[i])**2) + self.pointsy[i])
+                    self.down_barsy.append(-np.sqrt((down_bar - self.pointsy[i])**2 + (down_band - self.pointsy[i])**2) + self.pointsy[i])
+
+                self.up_barsx = np.asarray(self.up_barsx)
+                self.up_barsy = np.asarray(self.up_barsy)
+                self.down_barsx = np.asarray(self.down_barsx)
+                self.down_barsy = np.asarray(self.down_barsy)
+                print("Used bands and bars for {}, added in quadrature".format(self.get_name()))
+            else:
+                self.up_barsx = up_bandsx
+                self.up_barsy = up_bandsy
+                self.down_barsx = down_bandsx
+                self.down_barsy = down_bandsy
+                print("Used bands for {}".format(self.get_name()))
+        else: # There are no bands
             self.up_barsx, self.up_barsy = self._load_csv("spectrum-data/"+_files[id]+'/up-bars.csv')
             self.down_barsx, self.down_barsy = self._load_csv("spectrum-data/"+_files[id]+'/down-bars.csv')
+            print("Used bars for {}".format(self.get_name()))
 
-
-        if id in [AJELLO, DI_MAURO]: # Convert MeV to GeV for certain plots
+        if id in [DI_MAURO, AJELLO]: # Convert MeV to GeV for certain plots
             self.pointsy /= 1000
             self.up_barsy /= 1000
             self.down_barsy /= 1000
+
+        if id in [FERMILAB_NFW, FERMILAB_GNFW]: # Convert from 2 sigma to 1 sigma
+            bars_to_delete = []
+            self.up_barsx = list(self.up_barsx)
+            self.up_barsy = list(self.up_barsy)
+            self.down_barsx = list(self.down_barsx)
+            self.down_barsy = list(self.down_barsy)
+            for i, barx in enumerate(self.up_barsx):
+                point = self._get_point(barx, self.pointsx, self.pointsy)
+                if point is None:
+                    bars_to_delete.insert(0, i)
+                    continue
+                self.up_barsy[i] = (self.up_barsy[i] - point) / 2 + point
+            # bars_to_delete is sorted from high to low, so this is ok
+            for i in bars_to_delete:
+                del self.up_barsx[i]
+                del self.up_barsy[i]
+            bars_to_delete = []
+            for i, barx in enumerate(self.down_barsx):
+                point = self._get_point(barx, self.pointsx, self.pointsy)
+                if point is None:
+                    bars_to_delete.insert(0, i)
+                    continue
+                self.down_barsy[i] = (self.down_barsy[i] - point) / 2 + point
+            for i in bars_to_delete:
+                del self.down_barsx[i]
+                del self.down_barsy[i]
+            self.up_barsx = np.asarray(self.up_barsx)
+            self.up_barsy = np.asarray(self.up_barsy)
+            self.down_barsx = np.asarray(self.down_barsx)
+            self.down_barsy = np.asarray(self.down_barsy)
 
         if id in [ABAZAJIAN]:
             self.pointsy *= 1 / ABAZAJIAN_ROI_FACTOR
@@ -62,33 +152,32 @@ class Spectrum:
             self.up_barsy *= 1 / GORDON_ROI_FACTOR
             self.down_barsy *= 1 / GORDON_ROI_FACTOR
 
-        if id in [DI_MAURO, AJELLO]: # Convert from square ROI to ROI without band
+        if id in [AJELLO]:
+            self.pointsy *= 1 / AJELLO_ROI_FACTOR
+            self.up_barsy *= 1 / AJELLO_ROI_FACTOR
+            self.down_barsy *= 1 / AJELLO_ROI_FACTOR
+
+        if id in [DI_MAURO]: # Convert from square ROI to ROI without band
             self.pointsy /= LARGE_ROI_FACTOR
             self.up_barsy /= LARGE_ROI_FACTOR
             self.down_barsy /= LARGE_ROI_FACTOR
 
-        self.id = id
-        self.calore_norm = None
-        self.fit_norm = None
-        self.fit_alpha_below = None
-        self.fit_alpha_above = None
-        self.fit_l_break = None
 
     def get_name(self):
         if self.id == FERMILAB_GNFW:
-            return "Fermilab gNFW"
+            return "Ref. [14], $\gamma$=1.2"
         elif self.id == CALORE:
-            return "Calore"
+            return "Ref. [6]"
         elif self.id == DI_MAURO:
-            return "Di Mauro"
+            return "Ref. [7]"
         elif self.id == AJELLO:
-            return "Ajello"
+            return "Ref. [4]"
         elif self.id == FERMILAB_NFW:
-            return "Fermilab NFW"
+            return "Ref. [14], $\gamma$=1.0"
         elif self.id == ABAZAJIAN:
-            return "Abazajian"
+            return "Ref. [1]"
         elif self.id == GORDON:
-            return "Gordon"
+            return "Ref. [10]"
         return ""
 
     def _load_csv(self, filepath):
@@ -102,7 +191,15 @@ class Spectrum:
             xres.append(float(x) + np.log10(ERGS_PER_GEV))
             yres.append(10**float(y) * ERGS_PER_GEV)
         f.close()
-        return np.asarray(xres), np.asarray(yres) * ROI_SIZE
+
+        # Return the result, scaled to the ROI in question
+        if self.id in [ABAZAJIAN, AJELLO, GORDON]:
+            return np.asarray(xres), np.asarray(yres)
+        if self.id in [DI_MAURO]:
+            return np.asarray(xres), np.asarray(yres) * BIG_ROI_SIZE
+        if self.id in [FERMILAB_NFW, FERMILAB_GNFW, CALORE]:
+            return np.asarray(xres), np.asarray(yres) * MY_ROI_SIZE
+        return None
 
     def _get_point(self, logx, datax, datay):
         i = 0
