@@ -8,13 +8,13 @@
 \contentsline {section}{\numberline {3}Results}{9}{section.3}%
 \contentsline {subsection}{\numberline {3.1}$N_\text {r}$, $R_\text {r}$, and $N_\text {GCE}$ for different luminosity functions}{9}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Flux distribution}{9}{subsection.3.2}%
-\contentsline {section}{\numberline {4}Discussion}{13}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Sensitivity models}{13}{subsection.4.1}%
+\contentsline {section}{\numberline {4}Discussion}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Sensitivity models}{11}{subsection.4.1}%
 \contentsline {subsection}{\numberline {4.2}Allowed luminosity function parameterizations}{13}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Number of MSPs in the GCE}{14}{subsection.4.3}%
 \contentsline {subsection}{\numberline {4.4}Flux distribution}{14}{subsection.4.4}%
 \contentsline {section}{\numberline {5}Future Sensitivity}{14}{section.5}%
-\contentsline {section}{\numberline {6}Conclusion}{16}{section.6}%
+\contentsline {section}{\numberline {6}Conclusion}{15}{section.6}%
 \contentsline {section}{\numberline {A}Scaling of ROIs and Spectral Ranges}{16}{appendix.A}%
-\contentsline {section}{\numberline {B}Conversion Between GCE Luminosity and Flux}{17}{appendix.B}%
+\contentsline {section}{\numberline {B}Conversion Between GCE Luminosity and Flux}{16}{appendix.B}%
 \contentsline {section}{\numberline {C}Calculation of photon energy}{17}{appendix.C}%

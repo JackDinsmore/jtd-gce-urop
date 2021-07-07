@@ -1,10 +1,16 @@
 \begin{thebibliography}{10}
 
-\bibitem{Abazajian:2014fta}
-Kevork~N. Abazajian, Nicolas Canac, Shunsaku Horiuchi, and Manoj Kaplinghat.
-\newblock {Astrophysical and Dark Matter Interpretations of Extended Gamma-Ray
-  Emission from the Galactic Center}.
-\newblock {\em Phys. Rev. D}, 90(2):023526, 2014.
+\bibitem{Goodenough:2009gk}
+Lisa Goodenough and Dan Hooper.
+\newblock {Possible Evidence For Dark Matter Annihilation In The Inner Milky
+  Way From The Fermi Gamma Ray Space Telescope}.
+\newblock 10 2009.
+
+\bibitem{Zhong:2019ycb}
+Yi-Ming Zhong, Samuel~D. McDermott, Ilias Cholis, and Patrick~J. Fox.
+\newblock {Testing the Sensitivity of the Galactic Center Excess to the Point
+  Source Mask}.
+\newblock {\em Phys. Rev. Lett.}, 124(23):231103, 2020.
 
 \bibitem{Abdollahi_2020}
 S.~Abdollahi et~al.
@@ -12,21 +18,11 @@ S.~Abdollahi et~al.
 \newblock {\em The Astrophysical Journal Supplement Series}, 247(1):33, mar
   2020.
 
-\bibitem{Fermi-LAT:2019yla}
-S.~Abdollahi et~al.
-\newblock {$Fermi$ Large Area Telescope Fourth Source Catalog}.
-\newblock {\em Astrophys. J. Suppl.}, 247(1):33, 2020.
-
-\bibitem{Ajello:2015kwa}
-M.~Ajello et~al.
-\newblock {Fermi-LAT Observations of High-Energy $\gamma$-Ray Emission Toward
-  the Galactic Center}.
-\newblock {\em Astrophys. J.}, 819(1):44, 2016.
-
-\bibitem{Ballet:2020hze}
-J.~Ballet, T.~H. Burnett, S.~W. Digel, and B.~Lott.
-\newblock {Fermi Large Area Telescope Fourth Source Catalog Data Release 2}.
-\newblock 5 2020.
+\bibitem{Hobbs04}
+G.~{Hobbs}, R.~{Manchester}, A.~{Teoh}, and M.~{Hobbs}.
+\newblock {The ATNF Pulsar Catalog}.
+\newblock In Fernando {Camilo} and Bryan~M. {Gaensler}, editors, {\em Young
+  Neutron Stars and Their Environments}, volume 218, page 139, January 2004.
 
 \bibitem{Calore:2014xka}
 Francesca Calore, Ilias Cholis, and Christoph Weniger.
@@ -39,18 +35,11 @@ Mattia Di~Mauro.
   of $Fermi$-LAT data}.
 \newblock {\em Phys. Rev. D}, 103(6):063029, 2021.
 
-\bibitem{Gautam:2021wqn}
-Anuj Gautam, Roland~M. Crocker, Lilia Ferrario, Ashley~J. Ruiter, Harrison
-  Ploeg, Chris Gordon, and Oscar Macias.
-\newblock {Millisecond Pulsars from Accretion Induced Collapse naturally
-  explain the Galactic Center Gamma-ray Excess}.
-\newblock 6 2021.
-
-\bibitem{Goodenough:2009gk}
-Lisa Goodenough and Dan Hooper.
-\newblock {Possible Evidence For Dark Matter Annihilation In The Inner Milky
-  Way From The Fermi Gamma Ray Space Telescope}.
-\newblock 10 2009.
+\bibitem{Abazajian:2014fta}
+Kevork~N. Abazajian, Nicolas Canac, Shunsaku Horiuchi, and Manoj Kaplinghat.
+\newblock {Astrophysical and Dark Matter Interpretations of Extended Gamma-Ray
+  Emission from the Galactic Center}.
+\newblock {\em Phys. Rev. D}, 90(2):023526, 2014.
 
 \bibitem{Gordon13}
 Chris Gordon and Oscar Mac\'ias.
@@ -58,17 +47,29 @@ Chris Gordon and Oscar Mac\'ias.
   fermi-lat gamma-ray observations.
 \newblock {\em Phys. Rev. D}, 88:083521, Oct 2013.
 
-\bibitem{Hobbs04}
-G.~{Hobbs}, R.~{Manchester}, A.~{Teoh}, and M.~{Hobbs}.
-\newblock {The ATNF Pulsar Catalog}.
-\newblock In Fernando {Camilo} and Bryan~M. {Gaensler}, editors, {\em Young
-  Neutron Stars and Their Environments}, volume 218, page 139, January 2004.
+\bibitem{Ajello:2015kwa}
+M.~Ajello et~al.
+\newblock {Fermi-LAT Observations of High-Energy $\gamma$-Ray Emission Toward
+  the Galactic Center}.
+\newblock {\em Astrophys. J.}, 819(1):44, 2016.
 
 \bibitem{osti_1305131}
 Dan Hooper and Tim Linden.
 \newblock {The gamma-ray pulsar population of globular clusters: Implications
   for the GeV excess}.
 \newblock {\em JCAP}, 2016(08), 8 2016.
+
+\bibitem{Ploeg:2020jeh}
+Harrison Ploeg, Chris Gordon, Roland Crocker, and Oscar Macias.
+\newblock {Comparing the Galactic Bulge and Galactic Disk Millisecond Pulsars}.
+\newblock {\em JCAP}, 12:035, 2020.
+
+\bibitem{Gautam:2021wqn}
+Anuj Gautam, Roland~M. Crocker, Lilia Ferrario, Ashley~J. Ruiter, Harrison
+  Ploeg, Chris Gordon, and Oscar Macias.
+\newblock {Millisecond Pulsars from Accretion Induced Collapse naturally
+  explain the Galactic Center Gamma-ray Excess}.
+\newblock 6 2021.
 
 \bibitem{Lee:2015fea}
 Samuel~K. Lee, Mariangela Lisanti, Benjamin~R. Safdi, Tracy~R. Slatyer, and Wei
@@ -77,15 +78,14 @@ Samuel~K. Lee, Mariangela Lisanti, Benjamin~R. Safdi, Tracy~R. Slatyer, and Wei
   Galaxy}.
 \newblock {\em Phys. Rev. Lett.}, 116(5):051103, 2016.
 
-\bibitem{Ploeg:2020jeh}
-Harrison Ploeg, Chris Gordon, Roland Crocker, and Oscar Macias.
-\newblock {Comparing the Galactic Bulge and Galactic Disk Millisecond Pulsars}.
-\newblock {\em JCAP}, 12:035, 2020.
+\bibitem{Fermi-LAT:2019yla}
+S.~Abdollahi et~al.
+\newblock {$Fermi$ Large Area Telescope Fourth Source Catalog}.
+\newblock {\em Astrophys. J. Suppl.}, 247(1):33, 2020.
 
-\bibitem{Zhong:2019ycb}
-Yi-Ming Zhong, Samuel~D. McDermott, Ilias Cholis, and Patrick~J. Fox.
-\newblock {Testing the Sensitivity of the Galactic Center Excess to the Point
-  Source Mask}.
-\newblock {\em Phys. Rev. Lett.}, 124(23):231103, 2020.
+\bibitem{Ballet:2020hze}
+J.~Ballet, T.~H. Burnett, S.~W. Digel, and B.~Lott.
+\newblock {Fermi Large Area Telescope Fourth Source Catalog Data Release 2}.
+\newblock 5 2020.
 
 \end{thebibliography}

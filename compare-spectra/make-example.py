@@ -24,6 +24,7 @@ f.label_axes(ax)
 
 ax.plot([], [], color='C1', linestyle='--', label="Calore fit")
 ax.plot([], [], color='C2', linestyle='-.', label="Power law fit")
+ax.set_ylim(2e-8, 5e-7)
 
 plt.title("")
 fig.tight_layout()
