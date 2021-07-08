@@ -1,10 +1,9 @@
-NPTF NFW PS luminosity function (nBelow = -0.66, nAbove = 18.2, fluxBreak = 8.656488e33 ergs/s/cm^2 
+NPTF NFW PS luminosity function (nBelow = -0.66, nAbove = 18.2, fluxBreak = 8.656488e33 ergs/s/cm^2
 	Total number of pulsars: 1968.450084
 	Number of visible pulsars: 2.309078
 	Fraction of seen luminosity: 0.011884
 
-NPTF Disk PS luminosity function (nBelow = 1.40, nAbove = 17.5, fluxBreak = 3.344552e35 ergs/s/cm^2 
+NPTF Disk PS luminosity function (nBelow = 1.40, nAbove = 17.5, fluxBreak = 3.344552e35 ergs/s/cm^2
 	Total number of pulsars: -47.568542
 	Number of visible pulsars: 34.255325
 	Fraction of seen luminosity: 0.521377
-

@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex draft"] 1625672271 "draft.aux" "draft.bbl" "draft" 1625672273
+["bibtex draft"] 1625672271 "draft.aux" "draft.bbl" "draft" 1625763951
   "/usr/share/texlive/texmf-dist/bibtex/bst/base/unsrt.bst" 1292289607 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "draft.aux" 1625672272 19030 67d3fd94e82e1c96e4461cb7748516ea "pdflatex"
+  "draft.aux" 1625754698 19030 67d3fd94e82e1c96e4461cb7748516ea "pdflatex"
   "gce.bib" 1625079739 9530 37f4f9004505296dd35545f2cbbda218 ""
   (generated)
   "draft.bbl"
   "draft.blg"
-["pdflatex"] 1625672271 "draft.tex" "draft.pdf" "draft" 1625672273
+["pdflatex"] 1625754697 "draft.tex" "draft.pdf" "draft" 1625763951
   "/etc/texmf/web2c/texmf.cnf" 1623641164 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/helvetic/phvbc7t.tfm" 1136768653 2672 88159036c64e674fcd9515bc9c7052d4 ""
@@ -156,11 +156,11 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1623641228 4770781 1ed1abab22da9c3e2cc82e4db562318b ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1623641283 8259765 6abca14c0ee3312bf0d92b6f58d80af8 ""
-  "draft.aux" 1625672272 19030 67d3fd94e82e1c96e4461cb7748516ea "pdflatex"
+  "draft.aux" 1625754698 19030 67d3fd94e82e1c96e4461cb7748516ea "pdflatex"
   "draft.bbl" 1625672271 3289 bb8d5a7adf0ec50ee13cb6bc06021054 "bibtex draft"
-  "draft.out" 1625672272 1317 945b45ac2aaa38d055593f2917af5f4a "pdflatex"
-  "draft.tex" 1625672268 52057 c5655e8af1e6c4007760e28f47e56cb0 ""
-  "draft.toc" 1625672272 1723 c64ed0fe7f62a3e7ffe8644910502000 "pdflatex"
+  "draft.out" 1625754698 1317 945b45ac2aaa38d055593f2917af5f4a "pdflatex"
+  "draft.tex" 1625763950 52081 ba884ab1d9459e0fa7c28df2fffc74b1 ""
+  "draft.toc" 1625754698 1723 c64ed0fe7f62a3e7ffe8644910502000 "pdflatex"
   "figs/all-spectra.pdf" 1625670964 177030 3a7db604c2c4657d6abcd1da6f0a2186 ""
   "figs/di-mauro-example.pdf" 1625670964 171465 1e799b99e9a9af6d37f33f3c6b469bd4 ""
   "figs/flux-distro-fix-count.pdf" 1625670964 101034 f57b9ed6d89c76a45064b05d60f07c99 ""
@@ -186,7 +186,7 @@
   "jcappub.sty" 1623641818 11222 a471a3ec9ac30ccc65290a53a3925fab ""
   (generated)
   "draft.aux"
+  "draft.log"
   "draft.pdf"
   "draft.out"
-  "draft.log"
   "draft.toc"

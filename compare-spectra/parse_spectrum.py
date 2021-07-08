@@ -341,7 +341,7 @@ class Spectrum:
              (a**(a1) * L**2 - a**2 * L**a1 - (a1 - 2)* a**2 * L**a1 * np.log(a) + (a1 -2)*a**2 * L**a1 * np.log(L))
         above_unc = c * self.fit_alpha_above_unc * b**(-a2) / (a2 - 2)**2 * \
             (-b**(a2) * L**2 + b**2 * L**a2 + (a2 - 2)* b**2 * L**a2 * np.log(b) - (a2 -2)*b**2 * L**a2 * np.log(L))
-
+        
         return (val, np.sqrt(norm_unc**2 + break_unc**2 + above_unc**2 + below_unc**2))
 
     def get_numerical_flux(self, l_min, l_max, override=False):
